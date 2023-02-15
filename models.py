@@ -2,25 +2,20 @@ from typing import Union
 from datetime import datetime, time, date
 from typing import Union
 from enum import Enum
+import statistics as stats
 
 from pydantic import BaseModel
 
 class BloodGlucoseSample(BaseModel):
-    value: int
-    sampling_date: datetime
     device_name: str
     device_serial_number: str
+    sampling_date: datetime
     recording_type: int
-    rapid_acting_insulin_used: bool
-    rapid_acting_insulin_qty: Union[int, None] = None
-    slow_acting_insulin_used: bool
-    slow_acting_insulin_qty: Union[int, None] = None
-    meal_eaten: bool
-    carbs: Union[int, None] = None
-    comments: Union[int, None] = None
-    blood_glucose_by_strip: Union[int, None] = None
+    value: int
 
-class TrendState(Enum, str):
+    def __repr__(self) -> str:
+        return repr(self.value) + "   " + repr(self.sampling_date) + "   " + self.device_name
+class TrendState(Enum):
     increase = 'increase'
     decrease = 'decrease'
     steady = 'steady'
@@ -41,7 +36,7 @@ class MonthTrend(Trend):
 
 class Stats(BaseModel):
     time_range: tuple[datetime, datetime]
-    mininum: int
+    minimum: int
     maximum: int
     stat_range: int
     mean: float
