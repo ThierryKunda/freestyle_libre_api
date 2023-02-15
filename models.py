@@ -53,4 +53,23 @@ class Stats(BaseModel):
     third_quartile: int
     median: Union[float, int]
 
+    @classmethod
+    def from_sample_collection(cls, sample_collection: list[BloodGlucoseSample]):
+        values = [s.value for s in sample_collection]
+        qts: list = stats.quantiles(values, n=4)
+        return cls(
+            time_range=(sample_collection[0].sampling_date, sample_collection[len(sample_collection)-1].sampling_date),
+            minimum=min(values),
+            maximum=max(values),
+            stat_range=max(values)-min(values),
+            mean=stats.fmean(values),
+            variance=stats.pvariance(values),
+            standard_deviation=stats.pstdev(values),
+            overall_samples_size=len(values),
+            first_quartile=qts[0],
+            second_quartile=qts[1],
+            third_quartile=qts[2],
+            median=stats.median(values)
+        )
+
 # Ajouter les classes sur les objectifs et sur les prédictions
