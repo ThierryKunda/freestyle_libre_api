@@ -42,6 +42,18 @@ class HourTrend(Trend):
 class DayTrend(Trend):
     days_intervals: tuple[date, date]
 
+    @classmethod
+    def from_days(cls, day1: date, day2: date, samples_collection: list[BloodGlucoseSample], error: int):
+        filtered_elements = list(filter(lambda e: day1 <= e.sampling_date.date() <= day2, samples_collection))
+        first_el, last_el = filtered_elements[0], filtered_elements[len(filtered_elements)-1]
+        state = TrendState.steady
+        delta_with_error = abs(last_el.value - first_el.value) + error
+        if delta_with_error > 0:
+            state = TrendState.increase
+        elif delta_with_error < 0:
+            state = TrendState.decrease
+        return cls(state=state, delta=delta_with_error, days_intervals=(day1,day2))
+
 class MonthTrend(Trend):
     months_intervals: tuple[(int, int), (int, int)]
     are_same_year: bool
