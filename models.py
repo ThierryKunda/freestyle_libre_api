@@ -31,7 +31,7 @@ class DayTrend(Trend):
     days_intervals: tuple[date, date]
 
 class MonthTrend(Trend):
-    months_intervals: tuple[int, int]
+    months_intervals: tuple[(int, int), (int, int)]
     are_same_year: bool
 
 class Stats(BaseModel):
