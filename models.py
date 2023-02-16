@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Callable
 from datetime import datetime, time, date
 from typing import Union
 from enum import Enum
@@ -15,6 +15,7 @@ class BloodGlucoseSample(BaseModel):
 
     def __repr__(self) -> str:
         return repr(self.value) + "   " + repr(self.sampling_date) + "   " + self.device_name
+
 class TrendState(Enum):
     increase = 'increase'
     decrease = 'decrease'
@@ -58,6 +59,20 @@ class MonthTrend(Trend):
     month_start: tuple[int, int]
     month_end: tuple[int, int]
     are_same_year: bool
+
+    @classmethod
+    def from_months(cls, mth1: int, yr1: int, mth2: int, yr2: int, samples_collection: list[BloodGlucoseSample], error: int):
+        # Comparing month and year values
+        interval_fun: Callable[[BloodGlucoseSample], bool] = lambda e: mth1 <= e.sampling_date.month <= mth2 and yr1 <= e.sampling_date.year <= yr2
+        filtered_elements = list(filter(interval_fun, samples_collection))
+        first_el, last_el = filtered_elements[0], filtered_elements[len(filtered_elements)-1]
+        state = TrendState.steady
+        delta_with_error = abs(last_el.value - first_el.value) + error
+        if delta_with_error > 0:
+            state = TrendState.increase
+        elif delta_with_error < 0:
+            state = TrendState.decrease
+        return cls(state=state, delta=delta_with_error, month_start=(mth1, yr1), month_end=(mth2, yr2), are_same_year=yr1==yr2)
 
 class Stats(BaseModel):
     time_range: tuple[datetime, datetime]
