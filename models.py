@@ -55,7 +55,8 @@ class DayTrend(Trend):
         return cls(state=state, delta=delta_with_error, days_intervals=(day1,day2))
 
 class MonthTrend(Trend):
-    months_intervals: tuple[(int, int), (int, int)]
+    month_start: tuple[int, int]
+    month_end: tuple[int, int]
     are_same_year: bool
 
 class Stats(BaseModel):
