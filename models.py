@@ -1,6 +1,5 @@
 from typing import Union, Callable
 from datetime import datetime, time, date
-from typing import Union
 from enum import Enum
 import statistics as stats
 
