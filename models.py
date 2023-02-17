@@ -105,5 +105,12 @@ class Stats(BaseModel):
             third_quartile=qts[2],
             median=stats.median(values)
         )
+    
+    @classmethod
+    def from_all_users_samples(cls, all_users_samples: dict[str, list[BloodGlucoseSample]]):
+        # Flatten the users collections
+        flatten_collection = [sample for user_collection in all_users_samples.values() for sample in user_collection]
+        return cls.from_sample_collection(flatten_collection) 
+        
 
 # Ajouter les classes sur les objectifs et sur les prédictions
