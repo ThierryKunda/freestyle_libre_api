@@ -23,7 +23,7 @@ stats = {key: models.Stats.from_sample_collection(samples[key]) for key in sampl
 @app.get("/user/{username}/samples")
 def read_samples(username: str, day: Optional[str] = None):
     if day is None:
-        return list(filter(lambda d: d.sampling_date.date() == datetime.today().date(), samples))
+        return list(filter(lambda d: d.sampling_date.date() == datetime.today().date(), samples[username]))
     return list(filter(lambda d: datetime.strptime(day, "%d-%m-%Y").date() == d.sampling_date.date(), samples[username]))
 
 @app.get("/user/{username}/stats")
