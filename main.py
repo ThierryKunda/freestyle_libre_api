@@ -30,6 +30,10 @@ def read_samples(username: str, day: Optional[str] = None):
 def read_stats(username: str):
     return stats[username]
 
+@app.get("/users/stats")
+def read_stats():
+    return models.Stats.from_all_users_samples(samples)
+
 @app.get("/user/{username}/trend/hours_interval")
 def read_trend_hours(username: str, h1_string: str, h2_string: str, error: int):
     h1 = datetime.strptime(h1_string, "%d-%m-%Y_%H:%M")
