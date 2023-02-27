@@ -26,7 +26,7 @@ def read_samples(username: str, day: Optional[str] = None):
         error_message = {
             "resource_type": "sample",
             "username": username,
-            "error_message": "The username is not in the database" 
+            "error_description": "The username is not in the database" 
         }
         raise HTTPException(status_code=404, detail=error_message)
     if day is None:
