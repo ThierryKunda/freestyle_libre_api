@@ -30,8 +30,19 @@ def read_samples(username: str, day: Optional[str] = None):
         }
         raise HTTPException(status_code=404, detail=error_message)
     if day is None:
-        return list(filter(lambda d: d.sampling_date.date() == datetime.today().date(), samples[username]))
-    return list(filter(lambda d: datetime.strptime(day, "%d-%m-%Y").date() == d.sampling_date.date(), samples[username]))
+        res = list(filter(lambda d: d.sampling_date.date() == datetime.today().date(), samples[username]))
+        if len(res) == 0:
+            raise HTTPException(status_code=404)
+        return res
+    try:
+        return list(filter(lambda d: datetime.strptime(day, "%d-%m-%Y").date() == d.sampling_date.date(), samples[username]))
+    except ValueError:
+        error_message = {
+            "resource_type": "sample",
+            "username": username,
+            "error_description": "The date input is invalid" 
+        }
+        raise HTTPException(status_code=400, detail=error_message)
 
 @app.get("/user/{username}/stats")
 def read_stats(username: str):
