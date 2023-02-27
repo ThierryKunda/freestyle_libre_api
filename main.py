@@ -21,7 +21,7 @@ samples = {data.split('_')[0]+"_"+data.split('_')[1]: api.samples_from_csv(filep
 stats = {key: models.Stats.from_sample_collection(samples[key]) for key in samples}
 
 @app.get("/user/{username}/samples")
-def read_samples(username: Optional[str], day: Optional[str] = None):
+def read_samples(username: str, day: Optional[str] = None):
     if username not in samples:
         error_message = {
             "resource_type": "sample",
