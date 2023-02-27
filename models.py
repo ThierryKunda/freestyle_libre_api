@@ -32,12 +32,12 @@ class HourTrend(Trend):
         filtered_elements = list(filter(lambda e: h1 <= e.sampling_date <= h2, samples_collection))
         first_el, last_el = filtered_elements[0], filtered_elements[len(filtered_elements)-1]
         state = TrendState.steady
-        delta_with_error = abs(last_el.value - first_el.value) + error
-        if delta_with_error > 0:
+        delta = abs(last_el.value - first_el.value)
+        if delta - error > 0:
             state = TrendState.increase
-        elif delta_with_error < 0:
+        elif delta + error < 0:
             state = TrendState.decrease
-        return cls(state=state, delta=delta_with_error, hours_intervals=(h1,h2))
+        return cls(state=state, delta=delta, hours_intervals=(h1,h2))
     
 class DayTrend(Trend):
     days_intervals: tuple[date, date]
