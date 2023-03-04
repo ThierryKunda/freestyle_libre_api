@@ -36,6 +36,8 @@ async def upload_csv_data(personal_data: UploadFile, firstname: str = Form(), la
         file_content = await personal_data.read()
         f_data.write(file_content)
         f_data.close()
+        samples[f'{firstname}_{lastname}'] = api.samples_from_csv(filepath=os.path.join("users_data", f"{firstname}_{lastname}_{today_str}.csv"))
+        stats[f'{firstname}_{lastname}'] = models.Stats.from_sample_collection(samples[f"{firstname}_{lastname}"])
         return HTMLResponse(content=content)
     except IOError:
         # Displaying error page if file input handling failed
