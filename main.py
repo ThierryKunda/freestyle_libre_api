@@ -14,8 +14,30 @@ import api
 app = FastAPI()
 
 @app.get("/")
-def read_root():
-    return "Hello ! Here is the unofficial FreestyleLibre API."
+async def read_root():
+    f = open("pages/index.html", "r")
+    content = f.read()
+    f.close()
+    return HTMLResponse(content=content)
+
+@app.post("/file_uploaded.html")
+async def upload_csv_data(personal_data: UploadFile, firstname: str = Form(), lastname: str = Form()):
+    try:
+        f = open("pages/file_uploaded.html", "r")
+        content = f.read().replace("[[content]]", personal_data.filename)
+        f.close()
+        today_str = datetime.today().strftime("%d-%m-%Y")
+        f_data = open(os.path.join("users_data", f"{firstname}_{lastname}_{today_str}.csv"), "wb")
+        file_content = await personal_data.read()
+        # print(file_content.decode('utf-8'))
+        f_data.write(file_content)
+        f_data.close()
+        return HTMLResponse(content=content)
+    except IOError:
+        f = open("pages/error_upload.html", "r")
+        content = f.read()
+        f.close()
+        return HTMLResponse(content=content)
 
 samples = {data.split('_')[0]+"_"+data.split('_')[1]: api.samples_from_csv(filepath=os.path.join("users_data", f"{data}")) for data in os.listdir("users_data")}
 
