@@ -13,6 +13,10 @@ import api
 
 app = FastAPI()
 
+# Storing available data in variables
+samples = {data.split('_')[0]+"_"+data.split('_')[1]: api.samples_from_csv(filepath=os.path.join("users_data", f"{data}")) for data in os.listdir("users_data")}
+stats = {key: models.Stats.from_sample_collection(samples[key]) for key in samples}
+
 @app.get("/")
 async def read_root():
     f = open("pages/index.html", "r")
@@ -39,10 +43,6 @@ async def upload_csv_data(personal_data: UploadFile, firstname: str = Form(), la
         content = f.read()
         f.close()
         return HTMLResponse(content=content)
-
-samples = {data.split('_')[0]+"_"+data.split('_')[1]: api.samples_from_csv(filepath=os.path.join("users_data", f"{data}")) for data in os.listdir("users_data")}
-
-stats = {key: models.Stats.from_sample_collection(samples[key]) for key in samples}
 
 @app.get("/user/{username}/samples")
 def read_samples(username: str, day: Optional[str] = None):
