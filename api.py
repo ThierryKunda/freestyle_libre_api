@@ -16,7 +16,10 @@ def samples_from_csv(data_from: str = SourceType.CSVfile, **query_parameters) ->
     if data_from == SourceType.CSVfile:
         f = open(os.path.join(os.getcwd(), query_parameters['filepath']), newline='')
         reader = csv.reader(f, delimiter=',')
+        # Ignore the headers
         next(reader)
+        next(reader)
+        # Creating samples from each row
         for row in reader:
             if row[4] == "-1" or row[4] == "":
                 continue
@@ -37,8 +40,7 @@ def samples_from_csv(data_from: str = SourceType.CSVfile, **query_parameters) ->
     return res
 
 if __name__ == '__main__':
-    my_data = samples_from_csv(SourceType.CSVfile, filepath=os.path.join("tests","glucose_real_data.csv"))
-    # for s in my_data:
-    #     print(s)
+    my_data = samples_from_csv(SourceType.CSVfile, filepath=os.path.join("users_data","Benoit_Delarue_03-03-2023.csv"))
+    print(my_data, "\n")
     my_stats = Stats.from_sample_collection(my_data)
     print(my_stats)
