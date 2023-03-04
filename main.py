@@ -27,13 +27,14 @@ async def upload_csv_data(personal_data: UploadFile, firstname: str = Form(), la
         content = f.read().replace("[[content]]", personal_data.filename)
         f.close()
         today_str = datetime.today().strftime("%d-%m-%Y")
+        # Creating the CSV file for data storing
         f_data = open(os.path.join("users_data", f"{firstname}_{lastname}_{today_str}.csv"), "wb")
         file_content = await personal_data.read()
-        # print(file_content.decode('utf-8'))
         f_data.write(file_content)
         f_data.close()
         return HTMLResponse(content=content)
     except IOError:
+        # Displaying error page if file input handling failed
         f = open("pages/error_upload.html", "r")
         content = f.read()
         f.close()
