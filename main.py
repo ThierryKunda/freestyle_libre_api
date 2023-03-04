@@ -2,7 +2,7 @@ import os
 from typing import Optional, Union
 from datetime import datetime
 
-import json
+import re
 
 from fastapi import FastAPI, HTTPException, File, UploadFile, Form
 from fastapi.responses import HTMLResponse
@@ -27,24 +27,43 @@ async def read_root():
 @app.post("/file_uploaded.html")
 async def upload_csv_data(personal_data: UploadFile, firstname: str = Form(), lastname: str = Form()):
     try:
-        f = open("pages/file_uploaded.html", "r")
-        content = f.read().replace("[[content]]", personal_data.filename)
-        f.close()
+        if firstname == '' or lastname == '':
+            f = open("pages/error_upload.html", "r")
+            content = f.read().replace("[[error_description]]", "No firstname or lastname input")
+            f.close()
+            return HTMLResponse(content=content, status_code=400)
         today_str = datetime.today().strftime("%d-%m-%Y")
         # Creating the CSV file for data storing
-        f_data = open(os.path.join("users_data", f"{firstname}_{lastname}_{today_str}.csv"), "wb")
+        p = f"{firstname}_{lastname}_{today_str}.csv"
+        f_data = open(os.path.join("users_data", p), "wb")
         file_content = await personal_data.read()
         f_data.write(file_content)
         f_data.close()
-        samples[f'{firstname}_{lastname}'] = api.samples_from_csv(filepath=os.path.join("users_data", f"{firstname}_{lastname}_{today_str}.csv"))
+        samples[f'{firstname}_{lastname}'] = api.samples_from_csv(filepath=os.path.join("users_data", p))
         stats[f'{firstname}_{lastname}'] = models.Stats.from_sample_collection(samples[f"{firstname}_{lastname}"])
-        return HTMLResponse(content=content)
+        # Web page
+        f = open("pages/file_uploaded.html", "r")
+        content = f.read().replace("[[content]]", personal_data.filename)
+        f.close()
+        return HTMLResponse(content=content, status_code=200)
     except IOError:
         # Displaying error page if file input handling failed
         f = open("pages/error_upload.html", "r")
-        content = f.read()
+        content = f.read().replace("[[error_description]]", "file handling failed")
         f.close()
-        return HTMLResponse(content=content)
+        return HTMLResponse(content=content, status_code=500)
+    except IndexError:
+        # Displaying error page if a row doesn't have the same number of column
+        f = open("pages/error_upload.html", "r")
+        content = f.read().replace("[[error_description]]", "one or more rows does not have a good number of cells")
+        f.close()
+        return HTMLResponse(content=content, status_code=400)
+    except ValueError:
+        # Displaying error page if a row has an invalid value
+        f = open("pages/error_upload.html", "r")
+        content = f.read().replace("[[error_description]]", "one or more rows have an invalid value")
+        f.close()
+        return HTMLResponse(content=content, status_code=400)
 
 @app.get("/user/{username}/samples")
 def read_samples(username: str, day: Optional[str] = None):
