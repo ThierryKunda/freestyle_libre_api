@@ -74,18 +74,18 @@ class MonthTrend(Trend):
         return cls(state=state, delta=delta, month_start=(mth1, yr1), month_end=(mth2, yr2), are_same_year=yr1==yr2)
 
 class Stats(BaseModel):
-    time_range: tuple[datetime, datetime]
-    minimum: int
-    maximum: int
-    stat_range: int
-    mean: float
-    variance: float
-    standard_deviation: float
-    overall_samples_size: int
-    first_quartile: int
-    second_quartile: int
-    third_quartile: int
-    median: Union[float, int]
+    time_range: tuple[datetime, datetime] | None
+    minimum: int | None
+    maximum: int | None
+    stat_range: int | None
+    mean: float | None
+    variance: float | None
+    standard_deviation: float | None
+    overall_samples_size: int | None
+    first_quartile: int | None
+    second_quartile: int | None
+    third_quartile: int | None
+    median: Union[float, int] | None
 
     @classmethod
     def from_sample_collection(cls, sample_collection: list[BloodGlucoseSample]):
@@ -113,4 +113,18 @@ class Stats(BaseModel):
         return cls.from_sample_collection(flatten_collection) 
         
 
-# Ajouter les classes sur les objectifs et sur les prédictions
+class GoalStatus(Enum):
+    not_started = 'not started'
+    on_going = 'on going'
+    completed = 'completed'
+class Goal(BaseModel):
+    title: str
+    status: GoalStatus
+    time_range: tuple[datetime, datetime]
+
+class SamplesGoal(Goal):
+    average_target: int | None
+    trend_target: TrendState | None
+
+class StatsSGoal(Goal):
+    stats_target: Stats
