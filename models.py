@@ -123,13 +123,9 @@ class GoalStatus(Enum):
     completed = 'completed'
 
 class Goal(BaseModel):
-    title: str
-    status: GoalStatus
-    time_range: tuple[str, str] | tuple[datetime, datetime]
-
-class SamplesGoal(Goal):
+    title: str | None
+    status: GoalStatus | None
+    time_range: tuple[str, str] | tuple[datetime, datetime] | None
     average_target: int | None
     trend_target: TrendState | None
-
-class StatsGoal(Goal):
-    stats_target: Stats
+    stats_target: Stats | None
