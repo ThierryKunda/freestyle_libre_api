@@ -123,6 +123,7 @@ class GoalStatus(Enum):
     completed = 'completed'
 
 class Goal(BaseModel):
+    id: int | None
     title: str | None
     status: GoalStatus | None
     time_range: tuple[str, str] | tuple[datetime, datetime] | None
