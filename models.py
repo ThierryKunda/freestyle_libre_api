@@ -125,7 +125,7 @@ class GoalStatus(Enum):
 class Goal(BaseModel):
     title: str
     status: GoalStatus
-    time_range: tuple[datetime, datetime]
+    time_range: tuple[str, str] | tuple[datetime, datetime]
 
 class SamplesGoal(Goal):
     average_target: int | None
