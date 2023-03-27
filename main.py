@@ -112,3 +112,19 @@ def read_trend_days(username: str, day1_string: str, day2_string: str, error: in
 @app.get("/user/{username}/trend/months_interval")
 def read_trend_months(username: str, month1: int, year1: int, month2: int, year2: int, error: int):
     return models.MonthTrend.from_months(month1, year1, month2, year2, samples[username], error)
+
+@app.get("/user/{username}/goals")
+def get_all_goals(username: str) -> list[models.Goal]:
+    pass
+
+@app.post("/user/{username}/goal/")
+def add_new_goal(username: str, goal_type: models.GoalType, goal: models.Goal) -> models.Goal:
+    pass
+
+@app.delete("/user/{username}/goal/{id}")
+def remove_goal(username: str, id: int, finished: bool, goal_type: models.GoalType) -> models.Goal:
+    pass
+
+@app.delete("/user/{username}/goals")
+def remove_goals_from_criteria(username: str, criteria: models.Goal) -> list[models.Goal]:
+    pass
