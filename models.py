@@ -131,5 +131,5 @@ class SamplesGoal(Goal):
     average_target: int | None
     trend_target: TrendState | None
 
-class StatsSGoal(Goal):
+class StatsGoal(Goal):
     stats_target: Stats
