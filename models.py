@@ -74,7 +74,7 @@ class MonthTrend(Trend):
         return cls(state=state, delta=delta, month_start=(mth1, yr1), month_end=(mth2, yr2), are_same_year=yr1==yr2)
 
 class Stats(BaseModel):
-    time_range: tuple[datetime, datetime] | None
+    time_range:tuple[str, str] | tuple[datetime, datetime] | None
     minimum: int | None
     maximum: int | None
     stat_range: int | None
