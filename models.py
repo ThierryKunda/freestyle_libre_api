@@ -113,10 +113,15 @@ class Stats(BaseModel):
         return cls.from_sample_collection(flatten_collection) 
         
 
+class GoalType(Enum):
+    sample = 'sample'
+    stats = 'stats'
+
 class GoalStatus(Enum):
     not_started = 'not started'
     on_going = 'on going'
     completed = 'completed'
+
 class Goal(BaseModel):
     title: str
     status: GoalStatus
