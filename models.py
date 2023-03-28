@@ -77,7 +77,7 @@ class Stats(BaseModel):
     time_range:tuple[str, str] | tuple[datetime, datetime] | None
     minimum: int | None
     maximum: int | None
-    stat_range: int | None
+    range: int | None
     mean: float | None
     variance: float | None
     standard_deviation: float | None
@@ -126,7 +126,8 @@ class Goal(BaseModel):
     id: int | None
     title: str | None
     status: GoalStatus | None
-    time_range: tuple[str, str] | tuple[datetime, datetime] | None
+    start_datetime: str | datetime | None
+    end_datetime: str | datetime | None
     average_target: int | None
     trend_target: TrendState | None
     stats_target: Stats | None
