@@ -133,11 +133,11 @@ def get_all_goals(username: str) -> list[resources.Goal]:
     pass
 
 @app.post("/user/{username}/goal/")
-def add_new_goal(username: str, goal_type: resources.GoalType, goal: resources.Goal) -> resources.Goal:
+def add_new_goal(username: str, goal: resources.Goal) -> resources.Goal:
     pass
 
 @app.delete("/user/{username}/goal/{id}")
-def remove_goal(username: str, id: int, finished: bool, goal_type: resources.GoalType) -> resources.Goal:
+def remove_goal(username: str, id: int, finished: bool) -> resources.Goal:
     pass
 
 @app.delete("/user/{username}/goals")
