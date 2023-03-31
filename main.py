@@ -2,12 +2,28 @@ import os
 from typing import Optional, Union
 from datetime import datetime
 
-from fastapi import FastAPI, HTTPException, File, UploadFile, Form
+from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Depends
 from fastapi.responses import HTMLResponse
 
-from models import resources
+from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy import create_engine
 
-import api
+from models import resources
+from models.database import Base
+
+import api, utils
+
+SQLALCHEMY_DATABASE_URL = "sqlite:///./db.sqlite"
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base.metadata.create_all(bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 app = FastAPI()
 
@@ -23,7 +39,8 @@ async def read_root():
     return HTMLResponse(content=content)
 
 @app.post("/file_uploaded.html")
-async def upload_csv_data(personal_data: UploadFile, firstname: str = Form(), lastname: str = Form()):
+async def upload_csv_data(personal_data: UploadFile, firstname: str = Form(), lastname: str = Form(), db: Session = Depends(get_db)):
+    utils.add_new_user(db, firstname, lastname)
     try:
         if firstname == '' or lastname == '':
             f = open("pages/error_upload.html", "r")
