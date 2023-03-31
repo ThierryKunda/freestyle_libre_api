@@ -5,7 +5,7 @@ import csv
 import requests as req
 
 import os
-from models import BloodGlucoseSample, Stats
+from models.resources import BloodGlucoseSample, Stats
 
 class SourceType(Enum):
     CSVfile = 'CSVfile'

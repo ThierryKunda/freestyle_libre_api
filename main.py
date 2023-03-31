@@ -7,7 +7,7 @@ import re
 from fastapi import FastAPI, HTTPException, File, UploadFile, Form
 from fastapi.responses import HTMLResponse
 
-import models
+from models import resources
 
 import api
 
@@ -15,7 +15,7 @@ app = FastAPI()
 
 # Storing available data in variables
 samples = {data.split('_')[0]+"_"+data.split('_')[1]: api.samples_from_csv(filepath=os.path.join("users_data", f"{data}")) for data in os.listdir("users_data")}
-stats = {key: models.Stats.from_sample_collection(samples[key]) for key in samples}
+stats = {key: resources.Stats.from_sample_collection(samples[key]) for key in samples}
 
 @app.get("/")
 async def read_root():
@@ -40,7 +40,7 @@ async def upload_csv_data(personal_data: UploadFile, firstname: str = Form(), la
         f_data.write(file_content)
         f_data.close()
         samples[f'{firstname}_{lastname}'] = api.samples_from_csv(filepath=os.path.join("users_data", p))
-        stats[f'{firstname}_{lastname}'] = models.Stats.from_sample_collection(samples[f"{firstname}_{lastname}"])
+        stats[f'{firstname}_{lastname}'] = resources.Stats.from_sample_collection(samples[f"{firstname}_{lastname}"])
         # Web page
         f = open("pages/file_uploaded.html", "r")
         content = f.read().replace("[[content]]", personal_data.filename)
@@ -95,36 +95,36 @@ def read_stats(username: str):
 
 @app.get("/users/stats")
 def read_stats():
-    return models.Stats.from_all_users_samples(samples)
+    return resources.Stats.from_all_users_samples(samples)
 
 @app.get("/user/{username}/trend/hours_interval")
 def read_trend_hours(username: str, h1_string: str, h2_string: str, error: int):
     h1 = datetime.strptime(h1_string, "%d-%m-%Y_%H:%M")
     h2 = datetime.strptime(h2_string, "%d-%m-%Y_%H:%M")
-    return models.HourTrend.from_hours(h1,h2,samples[username], error)
+    return resources.HourTrend.from_hours(h1,h2,samples[username], error)
 
 @app.get("/user/{username}/trend/days_interval")
 def read_trend_days(username: str, day1_string: str, day2_string: str, error: int):
     day1 = datetime.strptime(day1_string, "%d-%m-%Y")
     day2 = datetime.strptime(day2_string, "%d-%m-%Y")
-    return models.HourTrend.from_hours(day1,day2,samples[username], error)
+    return resources.HourTrend.from_hours(day1,day2,samples[username], error)
 
 @app.get("/user/{username}/trend/months_interval")
 def read_trend_months(username: str, month1: int, year1: int, month2: int, year2: int, error: int):
-    return models.MonthTrend.from_months(month1, year1, month2, year2, samples[username], error)
+    return resources.MonthTrend.from_months(month1, year1, month2, year2, samples[username], error)
 
 @app.get("/user/{username}/goals")
-def get_all_goals(username: str) -> list[models.Goal]:
+def get_all_goals(username: str) -> list[resources.Goal]:
     pass
 
 @app.post("/user/{username}/goal/")
-def add_new_goal(username: str, goal_type: models.GoalType, goal: models.Goal) -> models.Goal:
+def add_new_goal(username: str, goal_type: resources.GoalType, goal: resources.Goal) -> resources.Goal:
     pass
 
 @app.delete("/user/{username}/goal/{id}")
-def remove_goal(username: str, id: int, finished: bool, goal_type: models.GoalType) -> models.Goal:
+def remove_goal(username: str, id: int, finished: bool, goal_type: resources.GoalType) -> resources.Goal:
     pass
 
 @app.delete("/user/{username}/goals")
-def remove_goals_from_criteria(username: str, criteria: models.Goal) -> list[models.Goal]:
+def remove_goals_from_criteria(username: str, criteria: resources.Goal) -> list[resources.Goal]:
     pass
