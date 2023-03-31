@@ -2,8 +2,6 @@ import os
 from typing import Optional, Union
 from datetime import datetime
 
-import re
-
 from fastapi import FastAPI, HTTPException, File, UploadFile, Form
 from fastapi.responses import HTMLResponse
 
