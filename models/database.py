@@ -1,26 +1,21 @@
-from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy import Column, ForeignKey, Integer, String, CheckConstraint, DateTime, Float
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./db.sqlite"
-
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 class User(Base):
     __tablename__ = "user"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     firstname = Column(String, nullable=False)
     lastname = Column(String, nullable=False)
 
-    goals = relationship("Goal", back_populates="owner")
+    goals = relationship("Goal", back_populates="user")
 
 class Goal(Base):
     __tablename__ = "goal"
     id = Column(Integer, primary_key=True)
-    user = Column(Integer, ForeignKey("user.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     title = Column(String, nullable=False)
     status = Column(Integer, CheckConstraint("status in (-1, 0, 1)"), nullable=False)
     start_datetime = Column(DateTime, nullable=False)
@@ -38,3 +33,5 @@ class Goal(Base):
     second_quart = Column(Integer)
     third_quart = Column(Integer)
     median = Column(Float)
+
+    user = relationship("User", back_populates="goals")
