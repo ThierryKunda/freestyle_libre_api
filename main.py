@@ -39,8 +39,8 @@ async def read_root():
     return HTMLResponse(content=content)
 
 @app.post("/file_uploaded.html")
-async def upload_csv_data(personal_data: UploadFile, firstname: str = Form(), lastname: str = Form(), db: Session = Depends(get_db)):
-    utils.add_new_user(db, firstname, lastname)
+async def upload_csv_data(personal_data: UploadFile, firstname: str = Form(), lastname: str = Form(), password: str = Form(), db: Session = Depends(get_db)):
+    utils.add_new_user(db, firstname, lastname, password=password)
     try:
         if firstname == '' or lastname == '':
             f = open("pages/error_upload.html", "r")
