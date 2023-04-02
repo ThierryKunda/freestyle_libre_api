@@ -9,6 +9,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     firstname = Column(String, nullable=False)
     lastname = Column(String, nullable=False)
+    password = Column(String, nullable=False)
 
     goals = relationship("Goal", back_populates="user")
 
