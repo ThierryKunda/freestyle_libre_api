@@ -1,9 +1,10 @@
 import os
-from typing import Optional, Union
+from typing import Optional, Annotated
 from datetime import datetime
 
-from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Depends
+from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Depends, status
 from fastapi.responses import HTMLResponse
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy import create_engine
@@ -25,11 +26,20 @@ def get_db():
     finally:
         db.close()
 
+
+
 app = FastAPI()
 
 # Storing available data in variables
 samples = {data.split('_')[0]+"_"+data.split('_')[1]: api.samples_from_csv(filepath=os.path.join("users_data", f"{data}")) for data in os.listdir("users_data")}
 stats = {key: resources.Stats.from_sample_collection(samples[key]) for key in samples}
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
+@app.get("/items/")
+async def read_items(token: str = Depends(oauth2_scheme)):
+    return {"token": token}
 
 @app.get("/")
 async def read_root():
