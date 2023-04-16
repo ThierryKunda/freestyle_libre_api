@@ -15,3 +15,7 @@ def add_new_user(db: Session, firstname: str, lastname: str, password: str):
     db.add(user)
     db.commit()
     return user
+
+def get_user_from_token(db: Session, token: str):
+    # TODO
+    pass
