@@ -4,9 +4,12 @@ from sqlalchemy.orm import Session
 
 import models.database as db_models
 
+def encode_secret(secret: str) -> str:
+    return hashlib.sha256(bytes(secret, encoding='utf-8')).hexdigest()
+
 def add_new_user(db: Session, firstname: str, lastname: str, password: str):
     # Hashing the password for security concern (obviously)
-    pw = hashlib.sha256(bytes(password, encoding='utf-8')).hexdigest()
+    pw = encode_secret(password)
     # Check if user already exists
     res = db.query(db_models.User).filter_by(firstname=firstname, lastname=lastname).first()
     if res:
