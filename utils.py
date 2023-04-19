@@ -17,5 +17,12 @@ def add_new_user(db: Session, firstname: str, lastname: str, password: str):
     return user
 
 def get_user_from_token(db: Session, token: str):
-    # TODO
-    pass
+    # Checks if token already exists
+    tk = db.query(db_models.Auth).filter_by(token_value=token).first()
+    if tk:
+        # Do nothing if tokens is expired
+        if tk.expiration_date > dt.now():
+            return None
+        return db.query(db_models.User).filter_by(id=tk.user_id).first()
+    else:
+        return None
