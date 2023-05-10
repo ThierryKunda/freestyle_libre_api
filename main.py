@@ -56,6 +56,13 @@ def render_html_page(title: str, body: str):
     </body>
     </html>""".format(title, body))
 
+def map_access_form_inputs(
+        inputs: list[str] = ["not_allowed", "not_allowed", "not_allowed"],
+        mappings: dict[str, bool] = {"allowed": True, "not_allowed": False}
+    ):
+    return [mappings[inputs[i]] for i in range(len(inputs))]
+
+
 @app.get("/")
 async def read_root():
     f = open("pages/index.html", "r")
@@ -148,10 +155,7 @@ async def upload_csv_data(
             return render_html_error_message("The access token does not provide the right to acces user-related data", 403)
     try:
         if firstname == '' or lastname == '':
-            f = open("pages/error_upload.html", "r")
-            content = f.read().replace("[[error_description]]", "No firstname or lastname input")
-            f.close()
-            return HTMLResponse(content=content, status_code=400)
+            return render_html_error_message("No firstname or lastname input", 404)
         today_str = datetime.today().strftime("%d-%m-%Y")
         # Creating the CSV file for data storing
         p = f"{firstname}_{lastname}_{today_str}.csv"
