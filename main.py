@@ -63,9 +63,89 @@ async def read_root():
     f.close()
     return HTMLResponse(content=content)
 
-@app.post("/file_uploaded.html")
-async def upload_csv_data(personal_data: UploadFile, firstname: str = Form(), lastname: str = Form(), password: str = Form(), db: Session = Depends(get_db)):
-    utils.add_new_user(db, firstname, lastname, password=password)
+
+@app.get("/new_account")
+async def create_new_account():
+    return render_html_page("New account", """
+        <h1>Create a new account</h1>
+        <form action="/account_created" method="POST" enctype="multipart/form-data">
+        <label for="firstname">First name : </label>
+        <input type="text" name="firstname" id="firstname" required>
+        <label for="lastname">Last name : </label>
+        <input type="text" name="lastname" id="lastname" required>
+        <label for="lastname">Password : </label>
+        <input type="password" name="password" id="password" required>
+        <input type="submit" value="Create new account">
+        </form>
+    """)
+
+@app.post("/account_created")
+async def account_created(
+    db: Session = Depends(get_db), firstname: str = Form(),
+    lastname: str = Form(), password: str = Form()
+    ):
+    user = utils.add_new_user(db, firstname=firstname, lastname=lastname, password=password)
+    if user:
+        return render_html_page("New account created", "<h1>New account created !</h1>")
+    else:
+        return render_html_error_message("user already exists", 403)
+
+@app.get("/new_access_token")
+async def new_access_token_form():
+    return render_html_page("New access token", """
+        <h1>Create a new access token</h1>
+        <form action="/access_token_created" method="POST" enctype="multipart/form-data">
+        <label for="firstname">First name : </label>
+        <input type="text" name="firstname" id="firstname" required>
+        <label for="lastname">Last name : </label>
+        <input type="text" name="lastname" id="lastname" required>
+        <label for="lastname">Password : </label>
+        <input type="password" name="password" id="password" required>
+        <label for="user-profile">User profile access</label>
+        <select name="user-profile" id="user-profile" required>
+            <option value="allowed">Allow</option>
+            <option value="not_allowed">Do not allow</option>
+        </select>
+        <label for="samples">User profile access</label>
+        <select name="samples" id="samples" required>
+            <option value="allowed">Allow</option>
+            <option value="not_allowed">Do not allow</option>
+        </select>
+        <label for="goals">User profile access</label>
+        <select name="goals" id="goals" required>
+            <option value="allowed">Allow</option>
+            <option value="not_allowed">Do not allow</option>
+        </select>
+        <input type="submit" value="Create token">
+        </form>
+    """)
+
+@app.post("/access_token_created")
+async def create_new_access_token(
+    db: Session = Depends(get_db), firstname: str = Form(), lastname: str = Form(),
+    password: str = Form(), user_profile_access: str = Form(alias="user-profile"),
+    samples_access: str = Form(alias="samples"), goals_access: str = Form(alias="goals")
+    ):
+    tk = utils.add_new_token(db, firstname, lastname, password, *map_access_form_inputs([user_profile_access, samples_access, goals_access]))
+    return tk
+
+@app.post("/file_uploaded")
+async def upload_csv_data(
+    personal_data: UploadFile, firstname: str = Form(), lastname: str = Form(),
+    password: str = Form(), db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+    ):
+    user = utils.add_new_user(db, firstname, lastname, password=password)
+    # Create a new token with all privileges if user does not already exist
+    if user:
+        utils.add_new_token(
+            db, firstname, lastname, password,
+            True, True, True
+        )
+    # If not case, the right "user_profile" provided by the access token is checked  
+    else:
+        rights = utils.get_token_rights(db, token)
+        if not rights["user_profile"]:
+            return render_html_error_message("The access token does not provide the right to acces user-related data", 403)
     try:
         if firstname == '' or lastname == '':
             f = open("pages/error_upload.html", "r")
