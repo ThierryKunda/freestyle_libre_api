@@ -12,7 +12,7 @@ class User(Base):
     password = Column(String, nullable=False)
 
     goals = relationship("Goal", back_populates="user", cascade="all, delete")
-    auth_tokens = relationship("Auth", back_populates="tokens", cascade="all, delete")
+    auth_tokens = relationship("Auth", back_populates="user", cascade="all, delete")
 
 class Goal(Base):
     __tablename__ = "goal"
@@ -49,4 +49,4 @@ class Auth(Base):
     samples_access = Column(Boolean, nullable=False)
     goals_access = Column(Boolean, nullable=False)
 
-    user = relationship("User", back_populates="user")
+    user = relationship("User", back_populates="auth_tokens")
