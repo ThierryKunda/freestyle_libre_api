@@ -1,6 +1,6 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, ForeignKey, Integer, String, CheckConstraint, DateTime, Float
+from sqlalchemy import Column, Boolean, ForeignKey, Integer, String, CheckConstraint, DateTime, Float
 
 Base = declarative_base()
 
@@ -11,7 +11,8 @@ class User(Base):
     lastname = Column(String, nullable=False)
     password = Column(String, nullable=False)
 
-    goals = relationship("Goal", back_populates="user")
+    goals = relationship("Goal", back_populates="user", cascade="all, delete")
+    auth_tokens = relationship("Auth", back_populates="tokens", cascade="all, delete")
 
 class Goal(Base):
     __tablename__ = "goal"
@@ -36,3 +37,16 @@ class Goal(Base):
     median = Column(Float)
 
     user = relationship("User", back_populates="goals")
+
+class Auth(Base):
+    __tablename__ = "auth"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    token_value = Column(String, nullable=False, unique=True)
+    expiration_date = Column(DateTime, nullable=False)
+    last_time_used = Column(DateTime, nullable=False)
+    user_profile_access = Column(Boolean, nullable=False)
+    samples_access = Column(Boolean, nullable=False)
+    goals_access = Column(Boolean, nullable=False)
+
+    user = relationship("User", back_populates="user")
