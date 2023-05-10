@@ -42,6 +42,20 @@ def render_html_error_message(message: str, status_code: int):
     f.close()
     return HTMLResponse(content=content, status_code=status_code)
 
+def render_html_page(title: str, body: str):
+    return HTMLResponse("""<!DOCTYPE html>
+    <html lang=\"en\">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{}</title>
+    </head>
+    <body>
+    {}
+    </body>
+    </html>""".format(title, body))
+
 @app.get("/")
 async def read_root():
     f = open("pages/index.html", "r")
