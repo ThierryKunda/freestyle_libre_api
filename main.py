@@ -36,10 +36,11 @@ stats = {key: resources.Stats.from_sample_collection(samples[key]) for key in sa
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-
-@app.get("/items/")
-async def read_items(token: str = Depends(oauth2_scheme)):
-    return {"token": token}
+def render_html_error_message(message: str, status_code: int):
+    f = open("pages/error.html", "r")
+    content = f.read().replace("[[error_description]]", message)
+    f.close()
+    return HTMLResponse(content=content, status_code=status_code)
 
 @app.get("/")
 async def read_root():
@@ -73,22 +74,12 @@ async def upload_csv_data(personal_data: UploadFile, firstname: str = Form(), la
         return HTMLResponse(content=content, status_code=200)
     except IOError:
         # Displaying error page if file input handling failed
-        f = open("pages/error_upload.html", "r")
-        content = f.read().replace("[[error_description]]", "file handling failed")
-        f.close()
-        return HTMLResponse(content=content, status_code=500)
+        return render_html_error_message("file handling failed", 500)
     except IndexError:
-        # Displaying error page if a row doesn't have the same number of column
-        f = open("pages/error_upload.html", "r")
-        content = f.read().replace("[[error_description]]", "one or more rows does not have a good number of cells")
-        f.close()
-        return HTMLResponse(content=content, status_code=400)
+        return render_html_error_message("one or more rows does not have a good number of cells", 400)
     except ValueError:
         # Displaying error page if a row has an invalid value
-        f = open("pages/error_upload.html", "r")
-        content = f.read().replace("[[error_description]]", "one or more rows have an invalid value")
-        f.close()
-        return HTMLResponse(content=content, status_code=400)
+        return render_html_error_message("one or more rows have an invalid value", 400)
 
 @app.get("/user/{username}/samples")
 def read_samples(username: str, day: Optional[str] = None):
