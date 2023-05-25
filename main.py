@@ -139,20 +139,12 @@ async def create_new_access_token(
 @app.post("/file_uploaded")
 async def upload_csv_data(
     personal_data: UploadFile, firstname: str = Form(), lastname: str = Form(),
-    password: str = Form(), db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+    db: Session = Depends(get_db), token: str = Form(alias="access-token")
     ):
-    user = utils.add_new_user(db, firstname, lastname, password=password)
-    # Create a new token with all privileges if user does not already exist
-    if user:
-        utils.add_new_token(
-            db, firstname, lastname, password,
-            True, True, True
-        )
-    # If not case, the right "user_profile" provided by the access token is checked  
-    else:
-        rights = utils.get_token_rights(db, token)
-        if not rights["user_profile"]:
-            return render_html_error_message("The access token does not provide the right to acces user-related data", 403)
+    # The right "user_profile" provided by the access token is checked  
+    rights = utils.get_token_rights(db, token)
+    if not rights["user_profile"]:
+        return render_html_error_message("The access token does not provide the right to add or delete user's medical data", 403)
     try:
         if firstname == '' or lastname == '':
             return render_html_error_message("No firstname or lastname input", 404)
