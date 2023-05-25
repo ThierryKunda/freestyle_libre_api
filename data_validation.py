@@ -61,7 +61,10 @@ class DataItemValidator:
                         return False
         return True
     
-    def set_data(self, new_data: list[str]):
+    def set_data(self, new_data: list[str], verbose: bool):
+        if verbose:
+            print("Data :")
+            print(*new_data, sep= " | ", end="\n")
         self.data = new_data
 
     def exception_is_raised(self):
