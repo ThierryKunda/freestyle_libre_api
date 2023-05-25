@@ -26,8 +26,9 @@ class DataItemValidator:
 
     def __getitem__(self, key) -> str | None:
         self.check_data_initialized()
-        if self.data[key] in self.none_evaluated_values[key]:
-            return self.data[key]
+        if self.none_evaluated_values[key]:
+            if not self.data[key] in self.none_evaluated_values[key]:
+                return self.data[key]
         return None
     
     def size_is_valid(self) -> bool | None:
