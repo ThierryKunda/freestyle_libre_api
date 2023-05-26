@@ -77,7 +77,7 @@ class Stats(BaseModel):
     time_range:tuple[str, str] | tuple[datetime, datetime] | None
     minimum: int | None
     maximum: int | None
-    range: int | None
+    stat_range: int | None
     mean: float | None
     variance: float | None
     standard_deviation: float | None
