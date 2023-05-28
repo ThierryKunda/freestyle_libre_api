@@ -8,6 +8,11 @@ import models.database as db_models
 def encode_secret(secret: str) -> str:
     return hashlib.sha256(bytes(secret, encoding='utf-8')).hexdigest()
 
+def get_user(db: Session, username: str, password: str):
+    pw = encode_secret(password)
+    firstname, lastname = username.split("_")
+    return db.query(db_models.User).filter_by(firstname=firstname, lastname=lastname, password=pw).first()
+
 def add_new_user(db: Session, firstname: str, lastname: str, password: str):
     # Hashing the password for security concern (obviously)
     pw = encode_secret(password)
