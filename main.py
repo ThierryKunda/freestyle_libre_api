@@ -33,8 +33,12 @@ app = FastAPI()
 # Storing available data in variables
 samples = {data.split('_')[0]+"_"+data.split('_')[1]: api.samples_from_csv(filepath=os.path.join("users_data", f"{data}")) for data in os.listdir("users_data")}
 stats = {key: resources.Stats.from_sample_collection(samples[key]) for key in samples}
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+# Default prefixes : profile samples goals
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", scopes={
+    "profile": "Read information about user profile",
+    "samples": "Read samples related to a user",
+    "goals": "Read user goals"
+})
 
 def render_html_error_message(message: str, status_code: int):
     f = open("pages/error.html", "r")
