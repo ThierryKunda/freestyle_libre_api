@@ -58,8 +58,31 @@ def render_html_page(title: str, body: str):
 
 def map_access_form_inputs(
         inputs: list[str] = ["not_allowed", "not_allowed", "not_allowed"],
-        mappings: dict[str, bool] = {"allowed": True, "not_allowed": False}
+        mappings: dict[str, bool] = {"allowed": True, "not_allowed": False},
+        in_place: bool = False,
+        input_prefixed: bool = False,
     ):
+    # Default prefixes : profile samples goals
+    if input_prefixed:
+        res = [False, False, False]
+        for s in inputs:
+            if s.startswith("profile"):
+                allowing = s.split(":")[1]
+                res[0] = mappings[allowing]
+            elif s.startswith("samples"):
+                allowing = s.split(":")[1]
+                res[1] = mappings[allowing]
+            elif s.startswith("goals"):
+                allowing = s.split(":")[1]
+                res[2] = mappings[allowing]
+        return res
+    elif in_place:
+        print(inputs)
+        rights = ["profile", "samples", "goals"]
+        res = [True if s in inputs else False for s in rights]
+        print(res)
+        return res
+        # return res
     return [mappings[inputs[i]] for i in range(len(inputs))]
 
 
