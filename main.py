@@ -198,6 +198,17 @@ async def upload_csv_data(
         # Displaying error page if a row has an invalid value
         return render_html_error_message("one or more rows have an invalid value", 400)
 
+@app.post("/token")
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = utils.get_user(db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    firstname, lastname = form_data.username.split("_")
+    # Scopes format -> profile samples goals
+    access_rights = map_access_form_inputs(inputs=form_data.scopes, in_place=True)
+    tk = utils.add_new_token(db, firstname, lastname, form_data.password, access_rights[0], access_rights[1], access_rights[2])
+    return resources.Token(access_token=tk["value"], token_type="bearer")
+
 @app.get("/user/{username}/samples")
 def read_samples(username: str, day: Optional[str] = None):
     if username not in samples:
