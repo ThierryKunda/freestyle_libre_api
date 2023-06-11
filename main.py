@@ -89,6 +89,30 @@ def map_access_form_inputs(
         # return res
     return [mappings[inputs[i]] for i in range(len(inputs))]
 
+async def get_authorized_user(security_scopes: SecurityScopes, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)) -> User:
+    if security_scopes.scopes:
+        authentificate_value = f'Bearer scope="{security_scopes.scope_str}"'
+        rights = utils.get_token_rights(db, token)
+        unauth_expection = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not enough permission to perform any action on specified resource(s)",
+            headers={"WWW-Authenticate": authentificate_value}
+        )
+        for r in rights:
+            if rights[r]:
+                if not r in security_scopes.scopes:
+                    raise unauth_expection
+    else:
+        authentificate_value = 'Bearer'
+    user = utils.get_user_from_token(db, token)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": authentificate_value}
+        )
+    return user
+
 
 @app.get("/")
 async def read_root():
