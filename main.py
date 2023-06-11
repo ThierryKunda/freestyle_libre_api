@@ -65,7 +65,7 @@ def map_access_form_inputs(
         mappings: dict[str, bool] = {"allowed": True, "not_allowed": False},
         in_place: bool = False,
         input_prefixed: bool = False,
-    ):
+    ) -> list[bool]:
     # Default prefixes : profile samples goals
     if input_prefixed:
         res = [False, False, False]
