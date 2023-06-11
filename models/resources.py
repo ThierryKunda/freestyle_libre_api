@@ -5,6 +5,10 @@ import statistics as stats
 
 from pydantic import BaseModel
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
 class BloodGlucoseSample(BaseModel):
     device_name: str
     device_serial_number: str
