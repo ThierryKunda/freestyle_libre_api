@@ -1,16 +1,16 @@
 import os
-from typing import Optional, Annotated
+from typing import Optional
 from datetime import datetime
 
-from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Depends, status
+from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Depends, Security, status
 from fastapi.responses import HTMLResponse
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, SecurityScopes
 
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy import create_engine
 
 from models import resources
-from models.database import Base
+from models.database import Base, User
 
 import api, utils
 
@@ -232,7 +232,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     return resources.Token(access_token=tk["value"], token_type="bearer")
 
 @app.get("/user/{username}/samples")
-def read_samples(username: str, day: Optional[str] = None):
+def read_samples(day: Optional[str] = None, user: User = Security(get_authorized_user, scopes=['samples'])) -> list[resources.BloodGlucoseSample]:
+    username = f'{user.firstname}_{user.lastname}'
     if username not in samples:
         error_message = {
             "resource_type": "sample",
@@ -256,41 +257,49 @@ def read_samples(username: str, day: Optional[str] = None):
         raise HTTPException(status_code=400, detail=error_message)
 
 @app.get("/user/{username}/stats")
-def read_stats(username: str):
+def read_stats(user: User = Security(get_authorized_user, scopes=['profile'])):
+    username = user.firstname + "_" + user.lastname
     return stats[username]
 
 @app.get("/users/stats")
-def read_stats():
+def read_stats(_: User = Security(get_authorized_user, scopes=['profile'])):
     return resources.Stats.from_all_users_samples(samples)
 
 @app.get("/user/{username}/trend/hours_interval")
-def read_trend_hours(username: str, h1_string: str, h2_string: str, error: int):
+def read_trend_hours(h1_string: str, h2_string: str, error: int, user: User = Security(get_authorized_user, scopes=['samples'])):
+    username = user.firstname + '_' + user.lastname
     h1 = datetime.strptime(h1_string, "%d-%m-%Y_%H:%M")
     h2 = datetime.strptime(h2_string, "%d-%m-%Y_%H:%M")
     return resources.HourTrend.from_hours(h1,h2,samples[username], error)
 
 @app.get("/user/{username}/trend/days_interval")
-def read_trend_days(username: str, day1_string: str, day2_string: str, error: int):
+def read_trend_days(day1_string: str, day2_string: str, error: int, user: User = Security(get_authorized_user, scopes=['samples'])):
+    username = user.firstname + '_' + user.lastname
     day1 = datetime.strptime(day1_string, "%d-%m-%Y")
     day2 = datetime.strptime(day2_string, "%d-%m-%Y")
     return resources.HourTrend.from_hours(day1,day2,samples[username], error)
 
 @app.get("/user/{username}/trend/months_interval")
-def read_trend_months(username: str, month1: int, year1: int, month2: int, year2: int, error: int):
+def read_trend_months(username: str, month1: int, year1: int, month2: int, year2: int, error: int, user: User = Security(get_authorized_user, scopes=['samples'])):
+    username = user.firstname + '_' + user.lastname
     return resources.MonthTrend.from_months(month1, year1, month2, year2, samples[username], error)
 
 @app.get("/user/{username}/goals")
-def get_all_goals(username: str) -> list[resources.Goal]:
+def get_all_goals(user: User = Security(get_authorized_user, scopes=['goals'])) -> list[resources.Goal]:
+    username = user.firstname + '_' + user.lastname
     pass
 
 @app.post("/user/{username}/goal/")
-def add_new_goal(username: str, goal: resources.Goal) -> resources.Goal:
+def add_new_goal(goal: resources.Goal, user: User = Security(get_authorized_user, scopes=['goals'])) -> resources.Goal:
+    username = user.firstname + '_' + user.lastname
     pass
 
 @app.delete("/user/{username}/goal/{id}")
-def remove_goal(username: str, id: int, finished: bool) -> resources.Goal:
+def remove_goal(username: str, id: int, done: bool, user: User = Security(get_authorized_user, scopes=['goals'])) -> resources.Goal:
+    username = user.firstname + '_' + user.lastname
     pass
 
 @app.delete("/user/{username}/goals")
-def remove_goals_from_criteria(username: str, criteria: resources.Goal) -> list[resources.Goal]:
+def remove_goals_from_criteria(username: str, criteria: resources.Goal, user: User = Security(get_authorized_user, scopes=['samples'])) -> list[resources.Goal]:
+    username = user.firstname + '_' + user.lastname
     pass
