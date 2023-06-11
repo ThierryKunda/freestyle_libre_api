@@ -224,7 +224,7 @@ async def upload_csv_data(
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = utils.get_user(db, form_data.username, form_data.password)
     if not user:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect username or password")
     firstname, lastname = form_data.username.split("_")
     # Scopes format -> profile samples goals
     access_rights = map_access_form_inputs(inputs=form_data.scopes, in_place=True)
