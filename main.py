@@ -81,10 +81,8 @@ def map_access_form_inputs(
                 res[2] = mappings[allowing]
         return res
     elif in_place:
-        print(inputs)
         rights = ["profile", "samples", "goals"]
         res = [True if s in inputs else False for s in rights]
-        print(res)
         return res
         # return res
     return [mappings[inputs[i]] for i in range(len(inputs))]
