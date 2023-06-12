@@ -280,7 +280,7 @@ def read_trend_days(day1_string: str, day2_string: str, error: int, user: User =
     return resources.HourTrend.from_hours(day1,day2,samples[username], error)
 
 @app.get("/user/{username}/trend/months_interval")
-def read_trend_months(username: str, month1: int, year1: int, month2: int, year2: int, error: int, user: User = Security(get_authorized_user, scopes=['samples'])):
+def read_trend_months(month1: int, year1: int, month2: int, year2: int, error: int, user: User = Security(get_authorized_user, scopes=['samples'])):
     username = user.firstname + '_' + user.lastname
     return resources.MonthTrend.from_months(month1, year1, month2, year2, samples[username], error)
 
@@ -291,15 +291,12 @@ def get_all_goals(user: User = Security(get_authorized_user, scopes=['goals'])) 
 
 @app.post("/user/{username}/goal/")
 def add_new_goal(goal: resources.Goal, user: User = Security(get_authorized_user, scopes=['goals'])) -> resources.Goal:
-    username = user.firstname + '_' + user.lastname
     pass
 
 @app.delete("/user/{username}/goal/{id}")
-def remove_goal(username: str, id: int, done: bool, user: User = Security(get_authorized_user, scopes=['goals'])) -> resources.Goal:
-    username = user.firstname + '_' + user.lastname
+def remove_goal(id: int, done: bool, user: User = Security(get_authorized_user, scopes=['goals'])) -> resources.Goal:
     pass
 
 @app.delete("/user/{username}/goals")
-def remove_goals_from_criteria(username: str, criteria: resources.Goal, user: User = Security(get_authorized_user, scopes=['samples'])) -> list[resources.Goal]:
-    username = user.firstname + '_' + user.lastname
+def remove_goals_from_criteria(criteria: resources.Goal, user: User = Security(get_authorized_user, scopes=['samples'])) -> list[resources.Goal]:
     pass
