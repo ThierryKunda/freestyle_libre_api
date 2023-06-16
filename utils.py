@@ -4,6 +4,7 @@ from datetime import datetime as dt, timedelta as tdelta
 from sqlalchemy.orm import Session
 
 import models.database as db_models
+import models.resources as resources
 
 def encode_secret(secret: str) -> str:
     return hashlib.sha256(bytes(secret, encoding='utf-8')).hexdigest()
@@ -72,4 +73,80 @@ def get_token_rights(db: Session, token: str) -> dict[str, bool] | None:
             "goals": tk.goals_access,
             "samples": tk.samples_access,
         }
-    return None
+    return None    
+def get_user_goals(db: Session, user: db_models.User):
+    goals: list[db_models.Goal] = db.query(db_models.Goal).filter_by(user_id=user.id).all()
+    return [
+        resources.Goal(
+            id=g.id,
+            title=g.title,
+            status=resources.GoalStatus.from_integer(g.status),
+            start_datetime=g.start_datetime,
+            end_datetime=g.end_datetime,
+            average_target=g.average_target,
+            trend_target=resources.TrendState.from_integer(g.trend_target),
+            stats_target=resources.Stats(
+                minimum=g.minimum,
+                maximum=g.maximum,
+                stat_range=g.stat_range,
+                mean=g.mean,
+                median=g.median,
+                standard_deviation=g.std_dev,
+                overall_samples_size=g.overall_samples_size,
+                first_quartile=g.first_quart,
+                second_quartile=g.second_quart,
+                third_quartile=g.second_quart
+            )
+        )
+        for g in goals
+    ]
+
+def add_new_goal(
+            db: Session, user: db_models.User,
+            title: str,
+            status: int,
+            start_datetime: dt | None = None,
+            end_datetime: dt | None = None,
+            average_target: int | None = None,
+            trend_target: int | None = None,
+            minimum: int | None = None,
+            maximum: int | None = None,
+            stat_range: int | None = None,
+            mean: float | None = None,
+            variance: float | None = None,
+            std_dev: float | None = None,
+            overall_samples_size: int | None = None,
+            first_quart: int | None = None,
+            second_quart: int | None = None,
+            third_quart: int | None = None,
+            median: float | None = None
+        ):
+    existing_goal = db.query(db_models.Goal).filter_by(title=title).first()
+    if existing_goal:
+        return None
+    g = db_models.Goal(
+        user_id=user.id,
+        *[
+            title,
+            status,
+            start_datetime,
+            end_datetime,
+            average_target,
+            trend_target,
+            minimum,
+            maximum,
+            stat_range,
+            mean,
+            variance,
+            std_dev,
+            overall_samples_size,
+            first_quart,
+            second_quart,
+            third_quart,
+            median
+            ]
+
+    )
+    db.add(g)
+    db.commit()
+    return g
