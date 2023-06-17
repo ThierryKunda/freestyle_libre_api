@@ -24,6 +24,25 @@ class TrendState(Enum):
     decrease = 'decrease'
     steady = 'steady'
 
+    @classmethod
+    def from_integer(cls, trend_as_integer: int):
+        if trend_as_integer == -1:
+            return cls.decrease
+        elif trend_as_integer == 0:
+            return cls.steady
+        elif trend_as_integer == 1:
+            return cls.increase
+        else:
+            raise ValueError(f"The integer must be -1, 0 or 1, but it is {trend_as_integer}")
+        
+    def to_integer(self):
+        if self.name == 'decrease':
+            return -1
+        elif self.name == 'steady':
+            return 0
+        else:
+            return 1
+
 class Trend(BaseModel):
     state: TrendState
     delta: float
@@ -122,16 +141,37 @@ class GoalType(Enum):
     stats = 'stats'
 
 class GoalStatus(Enum):
-    not_started = 'not started'
-    on_going = 'on going'
+    not_started = 'not_started'
+    on_going = 'on_going'
     completed = 'completed'
+
+    @classmethod
+    def from_integer(cls, status_as_integer: int):
+        if status_as_integer == -1:
+            return cls.not_started
+        elif status_as_integer == 0:
+            return GoalStatus.on_going
+        elif status_as_integer == 1:
+            return GoalStatus.completed
+        else:
+            raise ValueError("The integer must be -1, 0 or 1, but it is "+ status_as_integer)
+    
+    def to_integer(self):
+        if self.name == 'not_started':
+            return -1
+        elif self.name == 'on_going':
+            return 0
+        else:
+            return 1
 
 class Goal(BaseModel):
     id: int | None
     title: str | None
     status: GoalStatus | None
-    start_datetime: str | datetime | None
-    end_datetime: str | datetime | None
+    start_datetime: datetime | None
+    end_datetime: datetime | None
     average_target: int | None
     trend_target: TrendState | None
     stats_target: Stats | None
+    minimum: int | None
+    maximum: int | None
