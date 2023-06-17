@@ -126,26 +126,23 @@ def add_new_goal(
         return None
     g = db_models.Goal(
         user_id=user.id,
-        *[
-            title,
-            status,
-            start_datetime,
-            end_datetime,
-            average_target,
-            trend_target,
-            minimum,
-            maximum,
-            stat_range,
-            mean,
-            variance,
-            std_dev,
-            overall_samples_size,
-            first_quart,
-            second_quart,
-            third_quart,
-            median
-            ]
-
+        title=title,
+        status=status,
+        start_datetime=start_datetime,
+        end_datetime=end_datetime,
+        average_target=average_target,
+        trend_target=trend_target,
+        minimum=minimum,
+        maximum=maximum,
+        stat_range=stat_range,
+        mean=mean,
+        variance=variance,
+        std_dev=std_dev,
+        overall_samples_size=overall_samples_size,
+        first_quart=first_quart,
+        second_quart=second_quart,
+        third_quart=third_quart,
+        median=median
     )
     db.add(g)
     db.commit()
