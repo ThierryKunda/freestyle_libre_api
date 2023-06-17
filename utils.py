@@ -80,11 +80,11 @@ def get_user_goals(db: Session, user: db_models.User):
         resources.Goal(
             id=g.id,
             title=g.title,
-            status=resources.GoalStatus.from_integer(g.status),
+            status=resources.GoalStatus.from_integer(g.status) if g.status else None,
             start_datetime=g.start_datetime,
             end_datetime=g.end_datetime,
             average_target=g.average_target,
-            trend_target=resources.TrendState.from_integer(g.trend_target),
+            trend_target=resources.TrendState.from_integer(g.trend_target) if g.trend_target else None,
             stats_target=resources.Stats(
                 minimum=g.minimum,
                 maximum=g.maximum,
