@@ -92,7 +92,7 @@ async def get_authorized_user(security_scopes: SecurityScopes, db: Session = Dep
         authentificate_value = f'Bearer scope="{security_scopes.scope_str}"'
         rights = utils.get_token_rights(db, token)
         unauth_expection = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permission to perform any action on specified resource(s)",
             headers={"WWW-Authenticate": authentificate_value}
         )
@@ -111,6 +111,9 @@ async def get_authorized_user(security_scopes: SecurityScopes, db: Session = Dep
         )
     return user
 
+def check_username(username: str, user: User) -> None:
+    if username != user.firstname + '_' + user.lastname:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token with username")
 
 @app.get("/")
 async def read_root():
@@ -332,7 +335,13 @@ def remove_goal(username: str, id: int, user: User = Security(get_authorized_use
         )
     return g
 
-
-@app.delete("/user/{username}/goals")
-def remove_goals_from_criteria(criteria: resources.Goal, user: User = Security(get_authorized_user, scopes=['samples'])) -> list[resources.Goal]:
-    pass
+@app.patch("/user/{username}/goal/{id}")
+def update_goal_element(username: str, id: int, updatedKey: resources.UpdatedKey, new_value: resources.GoalAttr, user: User = Security(get_authorized_user, scopes=['goals']), db: Session = Depends(get_db)) -> resources.Goal:
+    check_username(username, user)
+    g = utils.update_goal_attribute(db, id, updatedKey, new_value)
+    if not g:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="There is no goal with this identifier"
+        )
+    return g

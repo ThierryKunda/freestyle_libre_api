@@ -179,5 +179,6 @@ class Goal(BaseModel):
     average_target: int | None
     trend_target: TrendState | None
     stats_target: Stats | None
-    minimum: int | None
-    maximum: int | None
+
+class GoalAttr(BaseModel):
+    value: int | str | datetime

@@ -165,3 +165,28 @@ def remove_goal(db: Session, goal_id: int) -> resources.Goal | None:
         status=resources.GoalStatus.from_integer(existing_goal.status)
     )
     return g
+
+def update_goal_attribute(db: Session, goal_id: int, updatedKey: resources.UpdatedKey, new_value: resources.GoalAttr) ->resources.Goal | None:
+    existing_goal = db.query(db_models.Goal).filter_by(id=goal_id).first()
+    if not existing_goal:
+        return None
+    if updatedKey.name == 'title':
+        existing_goal.title = new_value.value
+    elif updatedKey.name == 'status':
+        existing_goal.status = new_value.value
+    elif updatedKey.name == 'start_datetime':
+        existing_goal.start_datetime = new_value.value
+    elif updatedKey.name == 'end_datetime':
+        existing_goal.end_datetime = new_value.value
+    db.commit()
+    g = resources.Goal(
+        id=existing_goal.id,
+        title=existing_goal.title,
+        average_target=existing_goal.average_target,
+        end_datetime=existing_goal.end_datetime,
+        start_datetime=existing_goal.start_datetime,
+        stats_target=None,
+        trend_target=resources.TrendState.from_integer(existing_goal.trend_target) if existing_goal.average_target else None,
+        status=resources.GoalStatus.from_integer(existing_goal.status) if existing_goal.status else None
+    )
+    return g
