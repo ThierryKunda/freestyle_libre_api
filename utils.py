@@ -147,3 +147,21 @@ def add_new_goal(
     db.add(g)
     db.commit()
     return g
+
+def remove_goal(db: Session, goal_id: int) -> resources.Goal | None:
+    existing_goal = db.query(db_models.Goal).filter_by(id=goal_id).first()
+    if not existing_goal:
+        return None
+    db.delete(existing_goal)
+    db.commit()
+    g = resources.Goal(
+        id=existing_goal.id,
+        title=existing_goal.title,
+        average_target=existing_goal.average_target,
+        end_datetime=existing_goal.end_datetime,
+        start_datetime=existing_goal.start_datetime,
+        stats_target=None,
+        trend_target=resources.TrendState.from_integer(existing_goal.trend_target),
+        status=resources.GoalStatus.from_integer(existing_goal.status)
+    )
+    return g

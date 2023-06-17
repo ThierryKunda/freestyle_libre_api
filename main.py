@@ -294,8 +294,16 @@ def add_new_goal(goal: resources.Goal, user: User = Security(get_authorized_user
     pass
 
 @app.delete("/user/{username}/goal/{id}")
-def remove_goal(id: int, done: bool, user: User = Security(get_authorized_user, scopes=['goals'])) -> resources.Goal:
-    pass
+def remove_goal(username: str, id: int, user: User = Security(get_authorized_user, scopes=['goals']), db: Session = Depends(get_db)) -> resources.Goal:
+    check_username(username, user)
+    g = utils.remove_goal(db, id)
+    if not g:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="There is no goal with this identifier"
+        )
+    return g
+
 
 @app.delete("/user/{username}/goals")
 def remove_goals_from_criteria(criteria: resources.Goal, user: User = Security(get_authorized_user, scopes=['samples'])) -> list[resources.Goal]:
