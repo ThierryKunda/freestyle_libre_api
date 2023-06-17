@@ -285,9 +285,9 @@ def read_trend_months(month1: int, year1: int, month2: int, year2: int, error: i
     return resources.MonthTrend.from_months(month1, year1, month2, year2, samples[username], error)
 
 @app.get("/user/{username}/goals")
-def get_all_goals(user: User = Security(get_authorized_user, scopes=['goals'])) -> list[resources.Goal]:
-    username = user.firstname + '_' + user.lastname
-    pass
+def get_all_goals(username: str, db: Session = Depends(get_db), user: User = Security(get_authorized_user, scopes=['goals'])) -> list[resources.Goal]:
+    check_username(username, user)
+    return utils.get_user_goals(db, user)
 
 @app.post("/user/{username}/goal/")
 def add_new_goal(goal: resources.Goal, user: User = Security(get_authorized_user, scopes=['goals'])) -> resources.Goal:
