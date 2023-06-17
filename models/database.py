@@ -18,9 +18,9 @@ class Goal(Base):
     __tablename__ = "goal"
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
-    title = Column(String, nullable=False)
-    status = Column(Integer, CheckConstraint("status in (-1, 0, 1)"), nullable=False)
-    start_datetime = Column(DateTime, nullable=False)
+    title = Column(String, nullable=False, unique=True)
+    status = Column(Integer, CheckConstraint("status in (-1, 0, 1)"), nullable=False, default=-1)
+    start_datetime = Column(DateTime)
     end_datetime = Column(DateTime)
     average_target = Column(Integer)
     trend_target = Column(Integer, CheckConstraint("trend_target in (-1, 0, 1)"))
