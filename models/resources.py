@@ -19,6 +19,12 @@ class BloodGlucoseSample(BaseModel):
     def __repr__(self) -> str:
         return repr(self.value) + "   " + repr(self.sampling_date) + "   " + self.device_name
 
+class UpdatedKey(Enum):
+    title = 'title'
+    status = 'status'
+    start_datetime = 'start_datetime'
+    end_datetime = 'end_datetime'
+
 class TrendState(Enum):
     increase = 'increase'
     decrease = 'decrease'
