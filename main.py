@@ -197,9 +197,18 @@ async def new_access_token_form():
 async def create_new_access_token(
     db: Session = Depends(get_db), firstname: str = Form(), lastname: str = Form(),
     password: str = Form(), user_profile_access: str = Form(alias="user-profile"),
-    samples_access: str = Form(alias="samples"), goals_access: str = Form(alias="goals")
+    samples_access: str = Form(alias="samples"), goals_access: str = Form(alias="goals"),
+    duration_unit: str = Form(alias="duration-unit"), duration_value: str = Form(alias="duration-value")
     ):
-    tk = utils.add_new_token(db, firstname, lastname, password, *map_access_form_inputs([user_profile_access, samples_access, goals_access]))
+    access_mapping = map_access_form_inputs([user_profile_access, samples_access, goals_access])
+    tk = utils.add_new_token(
+        db, firstname, lastname, password,
+        user_profile_access=access_mapping[0],
+        samples_access=access_mapping[1],
+        goals_access=access_mapping[2],
+        expiration_unit=duration_unit,
+        expiration_value=duration_value
+    )
     return tk
 
 @app.post("/file_uploaded")

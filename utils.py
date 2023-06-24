@@ -39,7 +39,9 @@ def add_new_token(
     current_dt = str(dt.now().timestamp())
     tk_value = encode_secret(current_dt)
     tk = db_models.Auth(
-        user_id=user.id, token_value=tk_value, expiration_date=dt.now() + tdelta(days=365),
+        user_id=user.id,
+        token_value=tk_value,
+        expiration_date=dt.now() + tdelta(days=days_from_unit(int(expiration_value), expiration_unit)),
         last_time_used=dt.now(),
         user_profile_access=user_profile_access,
         samples_access = samples_access,
