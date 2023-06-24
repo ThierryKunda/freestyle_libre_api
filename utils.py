@@ -26,6 +26,16 @@ def add_new_user(db: Session, firstname: str, lastname: str, password: str):
     db.commit()
     return user
 
+def days_from_unit(value: int, unit: str) -> int:
+    if unit == "days":
+        return value
+    elif unit == "months":
+        return value * 30
+    elif unit == "years":
+        return value * 365
+    else:
+        raise ValueError("Invalid time unit")
+
 def add_new_token(
         db: Session, firstname: str, lastname: str, password: str,
         user_profile_access: bool, samples_access: bool, goals_access: bool
