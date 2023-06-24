@@ -30,8 +30,7 @@ def get_db():
 
 app = FastAPI()
 
-# Storing available data in variables
-samples = {data.split('_')[0]+"_"+data.split('_')[1]: api.samples_from_csv(filepath=os.path.join("users_data", f"{data}")) for data in os.listdir("users_data")}
+samples = {}
 stats = {key: resources.Stats.from_sample_collection(samples[key]) for key in samples}
 # Default prefixes : profile samples goals
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", scopes={
@@ -39,6 +38,26 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", scopes={
     "samples": "Read samples related to a user",
     "goals": "Read user goals"
 })
+
+def lazy_load_user_data(username: str):
+    if username not in samples:
+        user_data = api.samples_from_csv(filepath=os.path.join("users_data", f"{username}.csv"))
+        if user_data:
+            samples[username] = user_data
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User data not found, based on username"
+            )
+def lazy_load_user_stats(username):
+    if username not in stats:
+        if username in samples:
+            stats[username] = resources.Stats.from_sample_collection(samples[username])
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User data not found, based on username"
+            )
 
 def render_html_error_message(message: str, status_code: int):
     f = open("pages/error.html", "r")
@@ -97,14 +116,14 @@ async def get_authorized_user(security_scopes: SecurityScopes, db: Session = Dep
             headers={"WWW-Authenticate": authentificate_value}
         )
         if rights:
-            for r in rights:
-                if rights[r]:
-                    if not r in security_scopes.scopes:
-                        raise unauth_expection
+            for r in security_scopes.scopes:
+                if not rights[r]:
+                    raise unauth_expection
+                    # if not r in security_scopes.scopes:
         else:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="token does not exist or is already expired",
+                detail="Token does not exist or is already expired",
                 headers={"WWW-Authentificate": authentificate_value}
             )
     else:
@@ -218,14 +237,14 @@ async def upload_csv_data(
     ):
     # The right "user_profile" provided by the access token is checked  
     rights = utils.get_token_rights(db, token)
-    if not rights["user_profile"]:
+    if not rights["profile"]:
         return render_html_error_message("The access token does not provide the right to add or delete user's medical data", 403)
     try:
         if firstname == '' or lastname == '':
-            return render_html_error_message("No firstname or lastname input", 404)
-        today_str = datetime.today().strftime("%d-%m-%Y")
+            return render_html_error_message("No firstname or lastname input", status.HTTP_404_NOT_FOUND)
+        # today_str = datetime.today().strftime("%d-%m-%Y")
         # Creating the CSV file for data storing
-        p = f"{firstname}_{lastname}_{today_str}.csv"
+        p = f"{firstname}_{lastname}.csv"
         f_data = open(os.path.join("users_data", p), "wb")
         file_content = await personal_data.read()
         f_data.write(file_content)
@@ -258,15 +277,9 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     return resources.Token(access_token=tk["value"], token_type="bearer")
 
 @app.get("/user/{username}/samples")
-def read_samples(day: Optional[str] = None, user: User = Security(get_authorized_user, scopes=['samples'])) -> list[resources.BloodGlucoseSample]:
-    username = f'{user.firstname}_{user.lastname}'
-    if username not in samples:
-        error_message = {
-            "resource_type": "sample",
-            "username": username,
-            "error_description": "The username is not in the database" 
-        }
-        raise HTTPException(status_code=404, detail=error_message)
+def read_samples(username: str, day: Optional[str] = None, user: User = Security(get_authorized_user, scopes=['samples'])) -> list[resources.BloodGlucoseSample]:
+    check_username(username, user)
+    lazy_load_user_data(username)
     if day is None:
         res = list(filter(lambda d: d.sampling_date.date() == datetime.today().date(), samples[username]))
         if len(res) == 0:
@@ -283,31 +296,39 @@ def read_samples(day: Optional[str] = None, user: User = Security(get_authorized
         raise HTTPException(status_code=400, detail=error_message)
 
 @app.get("/user/{username}/stats")
-def read_stats(user: User = Security(get_authorized_user, scopes=['profile'])):
-    username = user.firstname + "_" + user.lastname
+def read_user_stats(username: str, user: User = Security(get_authorized_user, scopes=['profile'])):
+    check_username(username, user)
+    lazy_load_user_data(username)
+    lazy_load_user_stats(username)
     return stats[username]
 
 @app.get("/users/stats")
 def read_stats(_: User = Security(get_authorized_user, scopes=['profile'])):
+    # Load data from all users
+    samples = {data.split('_')[0]+"_"+data.split('_')[1]: api.samples_from_csv(filepath=os.path.join("users_data", f"{data}")) for data in os.listdir("users_data")}
     return resources.Stats.from_all_users_samples(samples)
 
 @app.get("/user/{username}/trend/hours_interval")
-def read_trend_hours(h1_string: str, h2_string: str, error: int, user: User = Security(get_authorized_user, scopes=['samples'])):
-    username = user.firstname + '_' + user.lastname
+def read_trend_hours(username: str, h1_string: str, h2_string: str, error: int, user: User = Security(get_authorized_user, scopes=['samples'])):
+    check_username(username, user)
+    lazy_load_user_data(username)
     h1 = datetime.strptime(h1_string, "%d-%m-%Y_%H:%M")
     h2 = datetime.strptime(h2_string, "%d-%m-%Y_%H:%M")
     return resources.HourTrend.from_hours(h1,h2,samples[username], error)
 
 @app.get("/user/{username}/trend/days_interval")
-def read_trend_days(day1_string: str, day2_string: str, error: int, user: User = Security(get_authorized_user, scopes=['samples'])):
+def read_trend_days(username: str, day1_string: str, day2_string: str, error: int, user: User = Security(get_authorized_user, scopes=['samples'])):
+    check_username(username)
+    lazy_load_user_data(username)
     username = user.firstname + '_' + user.lastname
     day1 = datetime.strptime(day1_string, "%d-%m-%Y")
     day2 = datetime.strptime(day2_string, "%d-%m-%Y")
     return resources.HourTrend.from_hours(day1,day2,samples[username], error)
 
 @app.get("/user/{username}/trend/months_interval")
-def read_trend_months(month1: int, year1: int, month2: int, year2: int, error: int, user: User = Security(get_authorized_user, scopes=['samples'])):
-    username = user.firstname + '_' + user.lastname
+def read_trend_months(username: str, month1: int, year1: int, month2: int, year2: int, error: int, user: User = Security(get_authorized_user, scopes=['samples'])):
+    check_username(username, user)
+    lazy_load_user_data(username)
     return resources.MonthTrend.from_months(month1, year1, month2, year2, samples[username], error)
 
 @app.get("/user/{username}/goals")

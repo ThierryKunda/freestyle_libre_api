@@ -1,7 +1,7 @@
 {
     "users_data": {
         "schemas": {
-            "file_name_wo_extension": "prenom_nom_date.csv"
+            "file_name_wo_extension": "prenom_nom.csv"
         }
     }
 }
