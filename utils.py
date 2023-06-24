@@ -68,12 +68,13 @@ def get_token_rights(db: Session, token: str) -> dict[str, bool] | None:
     # Checks if token exists
     tk = db.query(db_models.Auth).filter_by(token_value=token).first()
     if tk:
-        return {
-            "profile": tk.user_profile_access,
-            "goals": tk.goals_access,
-            "samples": tk.samples_access,
-        }
-    return None    
+        if tk.expiration_date >= dt.now():
+            return {
+                "profile": tk.user_profile_access,
+                "goals": tk.goals_access,
+                "samples": tk.samples_access,
+            }
+    return None
 def get_user_goals(db: Session, user: db_models.User):
     goals: list[db_models.Goal] = db.query(db_models.Goal).filter_by(user_id=user.id).all()
     return [

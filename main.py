@@ -96,10 +96,17 @@ async def get_authorized_user(security_scopes: SecurityScopes, db: Session = Dep
             detail="Not enough permission to perform any action on specified resource(s)",
             headers={"WWW-Authenticate": authentificate_value}
         )
-        for r in rights:
-            if rights[r]:
-                if not r in security_scopes.scopes:
-                    raise unauth_expection
+        if rights:
+            for r in rights:
+                if rights[r]:
+                    if not r in security_scopes.scopes:
+                        raise unauth_expection
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="token does not exist or is already expired",
+                headers={"WWW-Authentificate": authentificate_value}
+            )
     else:
         authentificate_value = 'Bearer'
     user = utils.get_user_from_token(db, token)
