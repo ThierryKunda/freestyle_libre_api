@@ -38,7 +38,8 @@ def days_from_unit(value: int, unit: str) -> int:
 
 def add_new_token(
         db: Session, firstname: str, lastname: str, password: str,
-        user_profile_access: bool, samples_access: bool, goals_access: bool
+        user_profile_access: bool, samples_access: bool, goals_access: bool,
+        expiration_value: str = "3", expiration_unit: str = "months",
         ) -> dict[str, str]:
     # Get the user
     pw = encode_secret(password)
