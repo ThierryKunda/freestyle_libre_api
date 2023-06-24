@@ -182,6 +182,13 @@ async def new_access_token_form():
             <option value="allowed">Allow</option>
             <option value="not_allowed">Do not allow</option>
         </select>
+        <label for="duration-value">Token duration</label>
+        <input type="number" min="0" name="duration-value" />
+        <select name="duration-unit" id="duration-unit" required>
+            <option value="days">day(s)</option>
+            <option value="months">month(s)</option>
+            <option value="years">year(s)</option>
+        </select>
         <input type="submit" value="Create token">
         </form>
     """)
