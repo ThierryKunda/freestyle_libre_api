@@ -98,6 +98,15 @@ def get_token_rights(db: Session, token: str) -> dict[str, bool] | None:
                 "samples": tk.samples_access,
             }
     return None
+
+def update_token_last_used_date(db: Session, token: str) -> bool:
+    tk = db.query(db_models.Auth).filter_by(token_value=token).first()
+    if tk:
+        tk.last_time_used = dt.now()
+        db.commit()
+        return True
+    return False
+
 def get_user_goals(db: Session, user: db_models.User):
     goals: list[db_models.Goal] = db.query(db_models.Goal).filter_by(user_id=user.id).all()
     return [

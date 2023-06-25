@@ -107,6 +107,7 @@ def map_access_form_inputs(
     return [mappings[inputs[i]] for i in range(len(inputs))]
 
 async def get_authorized_user(security_scopes: SecurityScopes, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)) -> User:
+    utils.update_token_last_used_date(db, token)
     if security_scopes.scopes:
         authentificate_value = f'Bearer scope="{security_scopes.scope_str}"'
         rights = utils.get_token_rights(db, token)
