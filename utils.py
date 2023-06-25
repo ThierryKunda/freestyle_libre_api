@@ -2,6 +2,7 @@ import hashlib
 from datetime import datetime as dt, timedelta as tdelta
 
 from sqlalchemy.orm import Session
+from sqlalchemy import desc
 
 import models.database as db_models
 import models.resources as resources
@@ -36,22 +37,31 @@ def days_from_unit(value: int, unit: str) -> int:
     else:
         raise ValueError("Invalid time unit")
 
+def generate_token_value(db: Session, firstname: str, lastname: str) -> tuple[str, int] | None:
+    last_signature = db.query(db_models.SecretSignature).order_by(
+        desc(db_models.SecretSignature.generation_date)
+        ).first()
+    if last_signature:
+        return (encode_secret(firstname[:2]+lastname[-2:]+str(dt.now())+last_signature.secret_value), last_signature.id)
+    return None
+
 def add_new_token(
         db: Session, firstname: str, lastname: str, password: str,
         user_profile_access: bool, samples_access: bool, goals_access: bool,
         expiration_value: str = "3", expiration_unit: str = "months",
-        ) -> dict[str, str]:
+        ) -> dict[str, str] | None:
     # Get the user
     pw = encode_secret(password)
     user = db.query(db_models.User).filter_by(firstname=firstname, lastname=lastname, password=pw).first()
     if not user:
         return None
-    # Generate new token based on current date (timestamp)
-    current_dt = str(dt.now().timestamp())
-    tk_value = encode_secret(current_dt)
+    tk_value = generate_token_value(db, firstname, lastname)
+    if not tk_value:
+        return None
     tk = db_models.Auth(
         user_id=user.id,
-        token_value=tk_value,
+        signature_used=tk_value[1],
+        token_value=tk_value[0],
         expiration_date=dt.now() + tdelta(days=days_from_unit(int(expiration_value), expiration_unit)),
         last_time_used=dt.now(),
         user_profile_access=user_profile_access,

@@ -228,6 +228,14 @@ async def create_new_access_token(
         expiration_unit=duration_unit,
         expiration_value=duration_value
     )
+    if not tk:
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="The token cannot be generated for the time being.\nPlease be patient until the problem is resolved.",
+            headers={
+                "Retry-After": (60 * 60 * 24)
+            }
+        )
     return tk
 
 @app.post("/file_uploaded")
@@ -274,6 +282,14 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     # Scopes format -> profile samples goals
     access_rights = map_access_form_inputs(inputs=form_data.scopes, in_place=True)
     tk = utils.add_new_token(db, firstname, lastname, form_data.password, access_rights[0], access_rights[1], access_rights[2])
+    if not tk:
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="The token can not be generated for the time being.\nPlease be patient until the problem is resolved.",
+            headers={
+                "Retry-After": (60 * 60 * 24)
+            }
+        )
     return resources.Token(access_token=tk["value"], token_type="bearer")
 
 @app.get("/user/{username}/samples")
