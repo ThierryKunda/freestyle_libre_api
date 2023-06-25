@@ -42,6 +42,7 @@ class Auth(Base):
     __tablename__ = "auth"
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    signature_used = Column(Integer, ForeignKey("secret_signature.id"), nullable=False)
     token_value = Column(String, nullable=False, unique=True)
     expiration_date = Column(DateTime, nullable=False)
     last_time_used = Column(DateTime, nullable=False)
@@ -50,3 +51,12 @@ class Auth(Base):
     goals_access = Column(Boolean, nullable=False)
 
     user = relationship("User", back_populates="auth_tokens")
+    signature = relationship("SecretSignature", back_populates="token")
+
+class SecretSignature(Base):
+    __tablename__ = "secret_signature"
+    id = Column(Integer, primary_key=True)
+    secret_value = Column(String, nullable=False, unique=True)
+    generation_date = Column(DateTime, nullable=False)
+
+    token = relationship("Auth", back_populates="signature", cascade="all, delete")
