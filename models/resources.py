@@ -5,6 +5,12 @@ import statistics as stats
 
 from pydantic import BaseModel
 
+class User(BaseModel):
+    user_id: str
+    firstname: str
+    lastname: str
+    username: str
+
 class CreateUser(BaseModel):
     firstname: str
     lastname: str
@@ -187,3 +193,7 @@ class Goal(BaseModel):
 
 class GoalAttr(BaseModel):
     value: int | str | datetime
+
+class AllUserInformation(BaseModel):
+    account: User
+    goals: list[Goal]

@@ -108,6 +108,37 @@ def update_token_last_used_date(db: Session, token: str) -> bool:
         return True
     return False
 
+def remove_user(db: Session, existing_user: db_models.User):
+    user = db.merge(existing_user)
+    print(db, existing_user)
+    all_goals = db.query(db_models.Goal).filter_by(user_id=user.id).all()
+    all_goals = [resources.Goal(
+        id=g.id,
+        title=g.title,
+        average_target=g.average_target,
+        end_datetime=g.end_datetime,
+        start_datetime=g.start_datetime,
+        stats_target=None,
+        trend_target=resources.TrendState.from_integer(g.trend_target),
+        status=resources.GoalStatus.from_integer(g.status)
+    ) for g in all_goals]
+    for g in all_goals:
+        db.delete(g)
+    print(db, existing_user)
+    db.delete(user)
+    print(db, existing_user)
+    
+    db.commit()
+    return resources.AllUserInformation(
+        account=resources.User(
+            user_id=user.id,
+            firstname=user.firstname,
+            lastname=user.lastname,
+            username=user.firstname+"_"+user.lastname
+        ),
+        goals=all_goals
+    )
+
 def get_user_goals(db: Session, user: db_models.User):
     goals: list[db_models.Goal] = db.query(db_models.Goal).filter_by(user_id=user.id).all()
     return [
@@ -199,6 +230,23 @@ def remove_goal(db: Session, goal_id: int) -> resources.Goal | None:
         status=resources.GoalStatus.from_integer(existing_goal.status)
     )
     return g
+
+def remove_all_goals(db: Session, user: db_models.User) -> list[resources.Goal]:
+    all_goals = db.query(db_models.Goal).filter_by(user_id=user.id).all()
+    for g in all_goals:
+        db.delete(g)
+    db.commit()
+    return [resources.Goal(
+        id=g.id,
+        title=g.title,
+        average_target=g.average_target,
+        end_datetime=g.end_datetime,
+        start_datetime=g.start_datetime,
+        stats_target=None,
+        trend_target=resources.TrendState.from_integer(g.trend_target),
+        status=resources.GoalStatus.from_integer(g.status)
+    ) for g in all_goals]
+
 
 def update_goal_attribute(db: Session, goal_id: int, updatedKey: resources.UpdatedKey, new_value: resources.GoalAttr) ->resources.Goal | None:
     existing_goal = db.query(db_models.Goal).filter_by(id=goal_id).first()

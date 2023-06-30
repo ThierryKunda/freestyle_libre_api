@@ -305,8 +305,23 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
         )
     return resources.Token(access_token=tk["value"], token_type="bearer")
 
+@app.get("/user")
+async def get_user_infos(user: User = Security(get_authorized_user, scopes=['profile'])):
+    return resources.User(
+        user_id=user.id,
+        firstname=user.firstname,
+        lastname=user.lastname,
+        username=user.firstname+"_"+user.lastname
+    )
+
+@app.delete("/user")
+async def remove_user_account(db: Session = Depends(get_db), user: User = Security(get_authorized_user, scopes=['profile', 'samples', 'goals'])):
+    all_info = utils.remove_user(db, user)
+    print("User deleted")
+    return all_info
+
 @app.get("/user/{username}/samples")
-def read_samples(username: str, day: Optional[str] = None, user: User = Security(get_authorized_user, scopes=['samples'])) -> list[resources.BloodGlucoseSample]:
+async def read_samples(username: str, day: Optional[str] = None, user: User = Security(get_authorized_user, scopes=['samples'])) -> list[resources.BloodGlucoseSample]:
     check_username(username, user)
     lazy_load_user_data(username)
     if day is None:
