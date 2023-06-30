@@ -1,4 +1,5 @@
 import hashlib
+from typing import Literal
 from datetime import datetime as dt, timedelta as tdelta
 
 from sqlalchemy.orm import Session
@@ -48,7 +49,7 @@ def generate_token_value(db: Session, firstname: str, lastname: str) -> tuple[st
 def add_new_token(
         db: Session, firstname: str, lastname: str, password: str,
         user_profile_access: bool, samples_access: bool, goals_access: bool,
-        expiration_value: str = "3", expiration_unit: str = "months",
+        expiration_value: str = "3", expiration_unit: Literal["days", "months", "years"] = "months",
         ) -> dict[str, str] | None:
     # Get the user
     pw = encode_secret(password)
