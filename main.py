@@ -150,6 +150,18 @@ async def read_root():
     return HTMLResponse(content=content)
 
 
+@app.post("/user")
+async def new_user(user: resources.CreateUser, db: Session = Depends(get_db)):
+    new_user = utils.add_new_user(db, user.firstname, user.lastname, user.password)
+    if new_user:
+        tk = utils.add_new_token(db, user.firstname, user.lastname, user.password, True, True, True, 1, "days")
+        return tk
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User already exists"
+        )
+
 @app.get("/new_account")
 async def create_new_account():
     return render_html_page("New account", """

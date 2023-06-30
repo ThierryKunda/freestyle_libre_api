@@ -5,6 +5,11 @@ import statistics as stats
 
 from pydantic import BaseModel
 
+class CreateUser(BaseModel):
+    firstname: str
+    lastname: str
+    password: str
+
 class Token(BaseModel):
     access_token: str
     token_type: str
