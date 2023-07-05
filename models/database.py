@@ -1,8 +1,20 @@
+from enum import Enum
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Boolean, ForeignKey, Integer, String, CheckConstraint, DateTime, Float
+from sqlalchemy import Column, Boolean, ForeignKey, Integer, String, CheckConstraint, UniqueConstraint, DateTime, Float, Enum as sqlEnum
 
 Base = declarative_base()
+
+class HttpVerb(Enum):
+    get = 'get'
+    post = 'post'
+    head = 'head'
+    put = 'put'
+    patch = 'patch'
+    connect = 'connect'
+    options = 'options'
+    trace = 'trace'
+    delete = 'delete'
 
 class User(Base):
     __tablename__ = "user"
@@ -60,3 +72,24 @@ class SecretSignature(Base):
     generation_date = Column(DateTime, nullable=False)
 
     token = relationship("Auth", back_populates="signature", cascade="all, delete")
+
+class DocResource(Base):
+    __tablename__ = "doc_resource"
+    id = Column(Integer, primary_key=True)
+    resource_name = Column(String, nullable=False, unique=True)
+    description = Column(String)
+    admin_privilege = Column(Boolean, nullable=False)
+
+class DocFeature(Base):
+    __tablename__ = "doc_feature"
+    __table_args__ = (
+        UniqueConstraint("http_verb", "uri"),
+    )
+    id = Column(Integer, primary_key=True)
+    resource_id = Column(Integer, ForeignKey("doc_resource.id"), nullable=False)
+    title = Column(String, nullable=False, unique=True)
+    description = Column(String)
+    http_verb = Column(sqlEnum(HttpVerb), nullable=False)
+    uri = Column(String, nullable=False)
+    admin_privilege = Column(Boolean, nullable=False)
+    available = Column(Boolean, nullable=False, default=False)
