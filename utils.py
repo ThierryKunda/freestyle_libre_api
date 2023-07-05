@@ -272,3 +272,26 @@ def update_goal_attribute(db: Session, goal_id: int, updatedKey: resources.Updat
         status=resources.GoalStatus.from_integer(existing_goal.status) if existing_goal.status else None
     )
     return g
+
+def get_features_from_resource_name(resource_name: str, db: Session):
+    resource = db.query(db_models.DocResource).filter_by(resource_name=resource_name).first()
+    if resource:
+        features = db.query(db_models.DocFeature).filter_by(resource_id=resource.id).all()
+        for f in features:
+            print(f.http_verb.value)
+        return [resources.Feature(
+            title=f.title,
+            available=f.available,
+            description=f.description,
+            http_verb=f.http_verb.value,
+            uri=f.uri
+        )
+        for f in features]
+    return None
+
+def get_all_resources(db: Session):
+    return [resources.Resource(
+        resource_name=r.resource_name,
+        description=r.description
+    )
+        for r in db.query(db_models.DocResource).all()]

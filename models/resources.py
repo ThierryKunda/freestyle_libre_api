@@ -197,3 +197,14 @@ class GoalAttr(BaseModel):
 class AllUserInformation(BaseModel):
     account: User
     goals: list[Goal]
+
+class Resource(BaseModel):
+    resource_name: str
+    description: str | None
+
+class Feature(BaseModel):
+    title: str
+    description: str | None
+    http_verb: str
+    uri: str
+    available: bool

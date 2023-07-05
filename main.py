@@ -433,3 +433,18 @@ def update_goal_element(username: str, id: int, updatedKey: resources.UpdatedKey
             detail="There is no goal with this identifier"
         )
     return g
+
+@app.get("/doc/resources")
+async def get_all_resources_info(db: Session = Depends(get_db)):
+    return utils.get_all_resources(db)
+
+@app.get("/doc/resource/{resource_name}/features")
+async def get_resource_features(resource_name: str, db: Session = Depends(get_db)):
+    res = utils.get_features_from_resource_name(resource_name, db)
+    if res:
+        return res
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"The resource \"{resource_name}\" does not exist"
+        )
