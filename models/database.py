@@ -65,6 +65,15 @@ class Auth(Base):
     user = relationship("User", back_populates="auth_tokens")
     signature = relationship("SecretSignature", back_populates="token")
 
+class AdminManagement(Base):
+    __tablename__ = "admin_management"
+    id = Column(Integer, primary_key=True)
+    edit_date = Column(DateTime, nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    manage_doc = Column(Boolean, nullable=False)
+    manage_user = Column(Boolean, nullable=False)
+    manage_backup = Column(Boolean, nullable=False)
+
 class SecretSignature(Base):
     __tablename__ = "secret_signature"
     id = Column(Integer, primary_key=True)
