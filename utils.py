@@ -273,10 +273,10 @@ def update_goal_attribute(db: Session, goal_id: int, updatedKey: resources.Updat
     )
     return g
 
-def get_features_from_resource_name(resource_name: str, db: Session):
-    resource = db.query(db_models.DocResource).filter_by(resource_name=resource_name).first()
+def get_user_features_from_resource_name(resource_name: str, db: Session):
+    resource = db.query(db_models.DocResource).filter_by(resource_name=resource_name, admin_privilege=False).first()
     if resource:
-        features = db.query(db_models.DocFeature).filter_by(resource_id=resource.id).all()
+        features = db.query(db_models.DocFeature).filter_by(resource_id=resource.id, admin_privilege=False).all()
         for f in features:
             print(f.http_verb.value)
         return [resources.Feature(
@@ -295,3 +295,28 @@ def get_all_resources(db: Session):
         description=r.description
     )
         for r in db.query(db_models.DocResource).all()]
+
+def get_admin_features_from_resource_name(resource_name: str, db: Session, user: db_models.User):
+    # Checks if user is an administrator with doc management role
+    admin_record = db.query(db_models.AdminManagement).filter_by(
+        user_id=user.id
+    ).order_by(
+        db_models.AdminManagement.edit_date.desc()
+    ).first()
+    if admin_record and admin_record.manage_doc:
+        resource = db.query(db_models.DocResource).filter_by(resource_name=resource_name).first()
+        if resource:
+            features = db.query(db_models.DocFeature).filter_by(resource_id=resource.id, admin_privilege=True).all()
+            for f in features:
+                print(f.http_verb.value)
+            return [resources.Feature(
+                title=f.title,
+                available=f.available,
+                description=f.description,
+                http_verb=f.http_verb.value,
+                uri=f.uri
+            )
+            for f in features]
+        return None
+    else:
+        return False

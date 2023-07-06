@@ -440,11 +440,28 @@ async def get_all_resources_info(db: Session = Depends(get_db)):
 
 @app.get("/doc/resource/{resource_name}/features")
 async def get_resource_features(resource_name: str, db: Session = Depends(get_db)):
-    res = utils.get_features_from_resource_name(resource_name, db)
+    res = utils.get_user_features_from_resource_name(resource_name, db)
     if res:
         return res
     else:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"The resource \"{resource_name}\" does not exist"
+        )
+    
+@app.get("/doc/admin/resources/{resource_name}/features")
+async def get_admin_resource_features(resource_name: str, user: User = Security(get_authorized_user), db: Session = Depends(get_db)):
+    res = utils.get_admin_features_from_resource_name(resource_name, db, user)
+    if res:
+        return res
+    elif res is False:
+        pass
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"You do not have the right to perform this action."
+        )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"The resource '{resource_name}' does not exist."
         )
