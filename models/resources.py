@@ -10,6 +10,8 @@ class User(BaseModel):
     firstname: str
     lastname: str
     username: str
+    email: str
+    devices_list: list[str]
 
 class CreateUser(BaseModel):
     firstname: str

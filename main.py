@@ -5,6 +5,7 @@ from datetime import datetime
 from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Depends, Security, status
 from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, SecurityScopes
+from fastapi.middleware.cors import CORSMiddleware
 
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy import create_engine
@@ -27,8 +28,15 @@ def get_db():
         db.close()
 
 
-
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r'https?://(localhost|127\.0\.0\.1).*',
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*']
+)
 
 samples = {}
 stats = {key: resources.Stats.from_sample_collection(samples[key]) for key in samples}
@@ -311,7 +319,9 @@ async def get_user_infos(user: User = Security(get_authorized_user, scopes=['pro
         user_id=user.id,
         firstname=user.firstname,
         lastname=user.lastname,
-        username=user.firstname+"_"+user.lastname
+        username=user.firstname+"_"+user.lastname,
+        email=user.email,
+        devices_list=utils.get_user_devices(user)
     )
 
 @app.delete("/user")
