@@ -8,6 +8,8 @@ from sqlalchemy import desc
 import models.database as db_models
 import models.resources as resources
 
+import pandas as pd
+
 def encode_secret(secret: str) -> str:
     return hashlib.sha256(bytes(secret, encoding='utf-8')).hexdigest()
 
@@ -87,7 +89,7 @@ def get_user_from_token(db: Session, token: str) -> db_models.User | None:
         return db.query(db_models.User).filter_by(id=tk.user_id).first()
     else:
         return None
-    
+
 def get_user_data(username: str):
     return pd.read_csv(f"./users_data/{username}.csv", sep=',', header=1, parse_dates=[2], date_format="%d-%m-%Y %H:%M")
 
