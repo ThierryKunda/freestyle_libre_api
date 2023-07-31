@@ -77,7 +77,7 @@ def add_new_token(
         "expiration_date": tk.expiration_date
     }
 
-def get_user_from_token(db: Session, token: str):
+def get_user_from_token(db: Session, token: str) -> db_models.User | None:
     # Checks if token already exists
     tk = db.query(db_models.Auth).filter_by(token_value=token).first()
     if tk:
