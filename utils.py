@@ -88,6 +88,15 @@ def get_user_from_token(db: Session, token: str):
     else:
         return None
     
+def get_user_data(username: str):
+    return pd.read_csv(f"./users_data/{username}.csv", sep=',', header=1, parse_dates=[2], date_format="%d-%m-%Y %H:%M")
+
+def get_user_devices(user: db_models.User) -> list[str]:
+    if user:
+        user_data = get_user_data(user.firstname + "_" + user.lastname)
+        return list(set(user_data["Appareil"]))
+    return None
+
 def get_token_rights(db: Session, token: str) -> dict[str, bool] | None:
     # Checks if token exists
     tk = db.query(db_models.Auth).filter_by(token_value=token).first()
