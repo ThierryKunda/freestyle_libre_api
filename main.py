@@ -40,11 +40,12 @@ app.add_middleware(
 
 samples = {}
 stats = {key: resources.Stats.from_sample_collection(samples[key]) for key in samples}
-# Default prefixes : profile samples goals
+# Default prefixes : profile samples goals stats
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", scopes={
     "profile": "Read information about user profile",
     "samples": "Read samples related to a user",
-    "goals": "Read user goals"
+    "goals": "Read user goals",
+    "stats": "Read user statistics"
 })
 
 def lazy_load_user_data(username: str):
@@ -93,9 +94,9 @@ def map_access_form_inputs(
         in_place: bool = False,
         input_prefixed: bool = False,
     ) -> list[bool]:
-    # Default prefixes : profile samples goals
+    # Default prefixes : profile samples goals stats
     if input_prefixed:
-        res = [False, False, False]
+        res = [False, False, False, False]
         for s in inputs:
             if s.startswith("profile"):
                 allowing = s.split(":")[1]
@@ -106,9 +107,13 @@ def map_access_form_inputs(
             elif s.startswith("goals"):
                 allowing = s.split(":")[1]
                 res[2] = mappings[allowing]
+            elif s.startswith("stats"):
+                allowing = s.split(":")[1]
+                res[3] = mappings[allowing]
+
         return res
     elif in_place:
-        rights = ["profile", "samples", "goals"]
+        rights = ["profile", "samples", "goals", "stats"]
         res = [True if s in inputs else False for s in rights]
         return res
         # return res
@@ -300,9 +305,10 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect username or password")
     firstname, lastname = form_data.username.split("_")
-    # Scopes format -> profile samples goals
+    # Scopes format -> profile samples goals stats
     access_rights = map_access_form_inputs(inputs=form_data.scopes, in_place=True)
-    tk = utils.add_new_token(db, firstname, lastname, form_data.password, access_rights[0], access_rights[1], access_rights[2])
+    print(access_rights)
+    tk = utils.add_new_token(db, firstname, lastname, form_data.password, access_rights[0], access_rights[1], access_rights[2], access_rights[3])
     if not tk:
         raise HTTPException(
             status_code=status.HTTP_501_NOT_IMPLEMENTED,

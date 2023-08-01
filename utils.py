@@ -50,7 +50,7 @@ def generate_token_value(db: Session, firstname: str, lastname: str) -> tuple[st
 
 def add_new_token(
         db: Session, firstname: str, lastname: str, password: str,
-        user_profile_access: bool, samples_access: bool, goals_access: bool,
+        user_profile_access: bool, samples_access: bool, goals_access: bool, stats_access: bool,
         expiration_value: str = "3", expiration_unit: Literal["days", "months", "years"] = "months",
         ) -> dict[str, str] | None:
     # Get the user
@@ -65,11 +65,13 @@ def add_new_token(
         user_id=user.id,
         signature_used=tk_value[1],
         token_value=tk_value[0],
+        creation_date=dt.now(),
         expiration_date=dt.now() + tdelta(days=days_from_unit(int(expiration_value), expiration_unit)),
         last_time_used=dt.now(),
         user_profile_access=user_profile_access,
         samples_access = samples_access,
-        goals_access = goals_access
+        goals_access = goals_access,
+        stats_access = stats_access,
     )
     db.add(tk)
     db.commit()
@@ -108,6 +110,7 @@ def get_token_rights(db: Session, token: str) -> dict[str, bool] | None:
                 "profile": tk.user_profile_access,
                 "goals": tk.goals_access,
                 "samples": tk.samples_access,
+                "stats": tk.stats_access
             }
     return None
 
