@@ -101,6 +101,23 @@ def get_user_devices(user: db_models.User) -> list[str]:
         return list(set(user_data["Appareil"]))
     return None
 
+def get_user_tokens(db: Session, user_id: str):
+    user_tokens = db.query(db_models.Auth).filter_by(user_id=user_id).all()
+    print([tk.creation_date for tk in user_tokens])
+    return [
+        resources.TokenDisplay(
+            app_name=tk.app_name,
+            token_value=tk.token_value,
+            creation_date=tk.creation_date.strftime("%d/%m/%y-%H:%M"),
+            expiration_date=tk.expiration_date.strftime("%d/%m/%y-%H:%M"),
+            profile_right=tk.user_profile_access,
+            samples_right=tk.samples_access,
+            goals_right=tk.goals_access,
+            stats_right=tk.stats_access,
+        )
+        for tk in user_tokens
+    ]
+
 def get_token_rights(db: Session, token: str) -> dict[str, bool] | None:
     # Checks if token exists
     tk = db.query(db_models.Auth).filter_by(token_value=token).first()

@@ -299,6 +299,10 @@ async def upload_csv_data(
         # Displaying error page if a row has an invalid value
         return render_html_error_message("one or more rows have an invalid value", 400)
 
+@app.get("/tokens")
+async def get_tokens_list(db: Session = Depends(get_db), user: User = Security(get_authorized_user, scopes=['profile', 'samples', 'goals', 'stats'])):
+    return utils.get_user_tokens(db, user.id)
+
 @app.post("/token")
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = utils.get_user(db, form_data.username, form_data.password)

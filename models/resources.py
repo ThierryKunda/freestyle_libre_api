@@ -22,6 +22,16 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+class TokenDisplay(BaseModel):
+    app_name: str | None
+    token_value: str
+    creation_date: str
+    expiration_date: str
+    profile_right: bool
+    samples_right: bool
+    goals_right: bool
+    stats_right: bool
+
 class BloodGlucoseSample(BaseModel):
     device_name: str
     device_serial_number: str
