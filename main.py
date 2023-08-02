@@ -340,6 +340,14 @@ async def remove_user_account(db: Session = Depends(get_db), user: User = Securi
     print("User deleted")
     return all_info
 
+@app.post("/submit_password_change")
+async def req_new_password(req_params: resources.ReqNewPasswordParameters, db: Session = Depends(get_db)):
+    return utils.request_new_password(db, req_params.email)
+
+@app.put("/user/{username}/set_new_password")
+async def change_password(username: str, change_req_id: str, req_params: resources.ChangePasswordParameters, db: Session = Depends(get_db)):
+    return utils.change_user_password(db, change_req_id, username, req_params.new_password)
+
 @app.get("/user/{username}/samples")
 async def read_samples(username: str, day: Optional[str] = None, user: User = Security(get_authorized_user, scopes=['samples'])) -> list[resources.BloodGlucoseSample]:
     check_username(username, user)
