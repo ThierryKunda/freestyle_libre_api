@@ -69,6 +69,16 @@ class Auth(Base):
     user = relationship("User", back_populates="auth_tokens")
     signature = relationship("SecretSignature", back_populates="token")
 
+class NewPasswordReq(Base):
+    __tablename__ = "new_password_req"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    change_req_id = Column(String, nullable=False)
+    expiration_date = Column(DateTime, nullable=False)
+    change_applied = Column(Boolean, nullable=False, default=False)
+
+    user = relationship("User", back_populates="new_password_requests")
+
 class AdminManagement(Base):
     __tablename__ = "admin_management"
     id = Column(Integer, primary_key=True)
