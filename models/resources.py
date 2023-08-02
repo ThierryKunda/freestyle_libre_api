@@ -220,3 +220,13 @@ class Feature(BaseModel):
     http_verb: str
     uri: str
     available: bool
+
+class ReqNewPasswordParameters(BaseModel):
+    email: str
+
+class ChangePasswordParameters(BaseModel):
+    new_password: str
+
+class PasswordResponse(BaseModel):
+    is_success: bool
+    description: str
