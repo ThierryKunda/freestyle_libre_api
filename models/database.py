@@ -26,6 +26,7 @@ class User(Base):
 
     goals = relationship("Goal", back_populates="user", cascade="all, delete")
     auth_tokens = relationship("Auth", back_populates="user", cascade="all, delete")
+    new_password_requests = relationship("NewPasswordReq", back_populates="user", cascade="all, delete")
 
 class Goal(Base):
     __tablename__ = "goal"
