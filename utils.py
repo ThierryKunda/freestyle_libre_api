@@ -170,6 +170,33 @@ def remove_user(db: Session, existing_user: db_models.User):
         goals=all_goals
     )
 
+def request_new_password(db: Session, email: str):
+    user = db.query(db_models.User).filter_by(email=email).first()
+    if not user:
+        return resources.PasswordResponse(is_success=False, description="User not found 🕵️ : check your typed the email you used for registration.")
+    new_pw_req = db_models.NewPasswordReq(user_id=user.id, change_req_id=encode_secret(email+str(user.id)+str(dt.now())), expiration_date=dt.now()+tdelta(days=2))
+    db.add(new_pw_req)
+    db.commit()
+    return resources.PasswordResponse(is_success=True, description="Password successfully reset ! 😁 Check your email inbox to define a new one.")
+
+def change_user_password(db: Session, change_req_id: str, username: str, new_password: str):
+    firstname, lastname = username.split("_")
+    user = db.query(db_models.User).filter_by(firstname=firstname, lastname=lastname).first()
+    if not user:
+        return resources.PasswordResponse(is_success=False, description="User does not exist. 👻")
+    new_pw_req = db.query(db_models.NewPasswordReq).filter_by(user_id=user.id, change_req_id=change_req_id).first()
+    if not new_pw_req:
+        return resources.PasswordResponse(is_success=False, description="Invalid new password request. 🤔")
+    print(new_pw_req.change_applied)
+    if new_pw_req.expiration_date < dt.now():
+        return resources.PasswordResponse(is_success=False, description="Expired new password request. 🕰️")
+    if new_pw_req.change_applied:
+        return resources.PasswordResponse(is_success=False, description="New password request already used...🤷 Submit another one.")
+    user.password = encode_secret(new_password)
+    new_pw_req.change_applied = True
+    db.commit()
+    return resources.PasswordResponse(is_success=True, description="Password successfully changed/set. 😁")
+
 def get_user_goals(db: Session, user: db_models.User):
     goals: list[db_models.Goal] = db.query(db_models.Goal).filter_by(user_id=user.id).all()
     return [
