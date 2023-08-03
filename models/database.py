@@ -117,3 +117,15 @@ class DocFeature(Base):
     uri = Column(String, nullable=False)
     admin_privilege = Column(Boolean, nullable=False)
     available = Column(Boolean, nullable=False, default=False)
+
+class DocSection(Base):
+    __tablename__ = "doc_section"
+    id = Column(Integer, primary_key=True)
+    title = Column(String, nullable=False, unique=True)
+
+class DocContentBlock(Base):
+    __tablename__ = "doc_content_block"
+    id = Column(Integer, primary_key=True)
+    doc_section_id = Column(Integer, ForeignKey("doc_section.id"), nullable=False)
+    title = Column(String, nullable=False, unique=True)
+    content = Column(String, nullable=False, unique=True)

@@ -378,3 +378,15 @@ def get_admin_features_from_resource_name(resource_name: str, db: Session, user:
         return None
     else:
         return False
+    
+def get_doc_info(db: Session):
+    desc = db.query(db_models.DocSection).filter_by(title="description").first()
+    auth = db.query(db_models.DocSection).filter_by(title="authentification").first()
+    rights = db.query(db_models.DocSection).filter_by(title="rights").first()
+
+    if desc and auth and rights:
+        desc_content = [resources.BlockOfContent(title=b.title, content=b.content) for b in db.query(db_models.DocContentBlock).filter_by(doc_section_id=desc.id).all()]
+        auth_content = [resources.BlockOfContent(title=b.title, content=b.content) for b in db.query(db_models.DocContentBlock).filter_by(doc_section_id=auth.id).all()]
+        rights_content = [resources.BlockOfContent(title=b.title, content=b.content) for b in db.query(db_models.DocContentBlock).filter_by(doc_section_id=rights.id).all()]
+        return resources.APIDocInfo(description=desc_content, authentification=auth_content, rights=rights_content)
+    return None

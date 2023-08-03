@@ -493,3 +493,13 @@ async def get_admin_resource_features(resource_name: str, user: User = Security(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"The resource '{resource_name}' does not exist."
         )
+    
+@app.get("/doc/general_information")
+async def get_doc_information(db: Session = Depends(get_db)):
+    res = utils.get_doc_info(db)
+    if not res:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Missing documentation."
+        )
+    return res

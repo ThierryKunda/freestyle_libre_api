@@ -221,6 +221,15 @@ class Feature(BaseModel):
     uri: str
     available: bool
 
+class BlockOfContent(BaseModel):
+    title: str
+    content: str
+
+class APIDocInfo(BaseModel):
+    description: list[BlockOfContent]
+    authentification: list[BlockOfContent]
+    rights: list[BlockOfContent]
+
 class ReqNewPasswordParameters(BaseModel):
     email: str
 
