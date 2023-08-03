@@ -358,7 +358,7 @@ async def read_samples(username: str, day: Optional[str] = None, user: User = Se
             raise HTTPException(status_code=404)
         return res
     try:
-        return list(filter(lambda d: datetime.strptime(day, "%d-%m-%Y").date() == d.sampling_date.date(), samples[username]))
+        return list(filter(lambda d: datetime.strptime(day, "%d/%m/%Y").date() == d.sampling_date.date(), samples[username]))
     except ValueError:
         error_message = {
             "resource_type": "sample",
@@ -384,8 +384,8 @@ def read_stats(_: User = Security(get_authorized_user, scopes=['profile'])):
 def read_trend_hours(username: str, h1_string: str, h2_string: str, error: int, user: User = Security(get_authorized_user, scopes=['samples'])):
     check_username(username, user)
     lazy_load_user_data(username)
-    h1 = datetime.strptime(h1_string, "%d-%m-%Y_%H:%M")
-    h2 = datetime.strptime(h2_string, "%d-%m-%Y_%H:%M")
+    h1 = datetime.strptime(h1_string, "%d/%m/%Y-%H:%M")
+    h2 = datetime.strptime(h2_string, "%d/%m/%Y-%H:%M")
     return resources.HourTrend.from_hours(h1,h2,samples[username], error)
 
 @app.get("/user/{username}/trend/days_interval")
@@ -393,8 +393,8 @@ def read_trend_days(username: str, day1_string: str, day2_string: str, error: in
     check_username(username)
     lazy_load_user_data(username)
     username = user.firstname + '_' + user.lastname
-    day1 = datetime.strptime(day1_string, "%d-%m-%Y")
-    day2 = datetime.strptime(day2_string, "%d-%m-%Y")
+    day1 = datetime.strptime(day1_string, "%d/%m/%Y")
+    day2 = datetime.strptime(day2_string, "%d/%m/%Y")
     return resources.HourTrend.from_hours(day1,day2,samples[username], error)
 
 @app.get("/user/{username}/trend/months_interval")
