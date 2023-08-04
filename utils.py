@@ -1,6 +1,7 @@
 import hashlib
 from typing import Literal
 from datetime import datetime as dt, timedelta as tdelta
+from fastapi import HTTPException, status
 
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
@@ -390,3 +391,23 @@ def get_doc_info(db: Session):
         rights_content = [resources.BlockOfContent(title=b.title, content=b.content) for b in db.query(db_models.DocContentBlock).filter_by(doc_section_id=rights.id).all()]
         return resources.APIDocInfo(description=desc_content, authentification=auth_content, rights=rights_content)
     return None
+
+def get_resources_info(db: Session, user_id: int):
+    rs = db.query(db_models.DocResource).all()
+    is_admin = db.query(db_models.AdminManagement).filter_by(user_id=user_id).order_by(desc(db_models.AdminManagement.edit_date)).first()
+    unauth = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"You are not an admin, you do not have the right to perform this action."
+        )
+    if is_admin is None:
+        raise unauth
+    if not is_admin.manage_doc:
+        raise unauth
+    return [
+        resources.Resources(
+            id=r.id,
+            resource_name=r.resource_name,
+            description=r.description,
+        )
+        for r in rs
+    ]

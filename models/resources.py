@@ -239,3 +239,8 @@ class ChangePasswordParameters(BaseModel):
 class PasswordResponse(BaseModel):
     is_success: bool
     description: str
+
+class Resources(BaseModel):
+    id: int
+    resource_name: str
+    description: str | None

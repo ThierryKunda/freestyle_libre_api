@@ -503,3 +503,7 @@ async def get_doc_information(db: Session = Depends(get_db)):
             detail="Missing documentation."
         )
     return res
+
+@app.get("/doc/resources_data")
+async def get_resources_data(db: Session = Depends(get_db), user: User = Security(get_authorized_user)):
+    return utils.get_resources_info(db, user.id)
