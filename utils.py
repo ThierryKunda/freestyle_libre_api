@@ -392,6 +392,26 @@ def get_doc_info(db: Session):
         return resources.APIDocInfo(description=desc_content, authentification=auth_content, rights=rights_content)
     return None
 
+def check_admin_is_allowed(db: Session, user_id: int, role_required: resources.AdminRole):
+    is_admin = db.query(db_models.AdminManagement).filter_by(user_id=user_id).order_by(desc(db_models.AdminManagement.edit_date)).first()
+    unauth = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"You are not an admin or you do not have the right to perform this action."
+        )
+    if is_admin is None:
+        raise unauth
+    if role_required == resources.AdminRole.doc:
+        if not is_admin.manage_doc:
+            raise unauth
+    elif role_required == resources.AdminRole.user:
+        if not is_admin.manage_user:
+            raise unauth
+    elif role_required == resources.AdminRole.backup:
+        if not is_admin.manage_backup:
+            raise unauth
+    else:
+        raise unauth
+
 def get_resources_info(db: Session, user_id: int):
     rs = db.query(db_models.DocResource).all()
     is_admin = db.query(db_models.AdminManagement).filter_by(user_id=user_id).order_by(desc(db_models.AdminManagement.edit_date)).first()
@@ -399,10 +419,7 @@ def get_resources_info(db: Session, user_id: int):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"You are not an admin, you do not have the right to perform this action."
         )
-    if is_admin is None:
-        raise unauth
-    if not is_admin.manage_doc:
-        raise unauth
+    check_admin_is_allowed(db, user_id, resources.AdminRole.doc)
     return [
         resources.Resources(
             id=r.id,
@@ -410,4 +427,16 @@ def get_resources_info(db: Session, user_id: int):
             description=r.description,
         )
         for r in rs
+    ]
+
+def get_signatures(db: Session, user_id: int):
+    check_admin_is_allowed(db, user_id, resources.AdminRole.doc)
+    signatures = db.query(db_models.SecretSignature).all()
+    return [
+        resources.SecretSignature(
+            id=s.id,
+            secret_value=s.secret_value,
+            generation_date=s.generation_date.strftime('%d/%m/%Y-%H:%M')
+        )
+        for s in signatures 
     ]

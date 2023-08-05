@@ -244,3 +244,13 @@ class Resources(BaseModel):
     id: int
     resource_name: str
     description: str | None
+
+class AdminRole(Enum):
+    doc = 'doc'
+    user = 'user'
+    backup = 'backup'
+
+class SecretSignature(BaseModel):
+    id: int
+    secret_value: str
+    generation_date: str
