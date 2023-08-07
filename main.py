@@ -14,7 +14,7 @@ from models import resources
 from models.database import Base, User
 
 import api, utils
-
+FRONT_END_APP_URI = os.environ['FRONT_END_APP_URI']
 SQLALCHEMY_DATABASE_URL = "sqlite:///./db.sqlite"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -32,6 +32,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=[FRONT_END_APP_URI],
     allow_origin_regex=r'https?://(localhost|127\.0\.0\.1).*',
     allow_credentials=True,
     allow_methods=['*'],
