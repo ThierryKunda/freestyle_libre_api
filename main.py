@@ -39,7 +39,7 @@ app.add_middleware(
     allow_headers=['*']
 )
 
-samples = {}
+samples: dict[str, list[resources.BloodGlucoseSample]] = {}
 stats = {key: resources.Stats.from_sample_collection(samples[key]) for key in samples}
 # Default prefixes : profile samples goals stats
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", scopes={
@@ -367,6 +367,15 @@ async def read_samples(username: str, day: Optional[str] = None, user: User = Se
             "error_description": "The date input is invalid" 
         }
         raise HTTPException(status_code=400, detail=error_message)
+
+@app.get("/user/{username}/samples/latest")
+async def read_latest_samples(username: str, n_latest: Optional[int] = None, user: User = Security(get_authorized_user, scopes=['samples'])):
+    check_username(username, user)
+    lazy_load_user_data(username)
+    n = len(samples[username])
+    if n_latest:
+        return samples[username][n-(n_latest-1):n]
+    return samples[username][n-5:n]
 
 @app.get("/user/{username}/stats")
 def read_user_stats(username: str, user: User = Security(get_authorized_user, scopes=['profile'])):
