@@ -42,6 +42,10 @@ class BloodGlucoseSample(BaseModel):
     def __repr__(self) -> str:
         return repr(self.value) + "   " + repr(self.sampling_date) + "   " + self.device_name
 
+class AverageDaySample(BaseModel):
+    hour: time
+    average_value: int
+
 class UpdatedKey(Enum):
     title = 'title'
     status = 'status'
