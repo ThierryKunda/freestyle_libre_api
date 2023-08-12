@@ -377,6 +377,19 @@ async def read_latest_samples(username: str, n_latest: Optional[int] = None, use
         return samples[username][n-(n_latest-1):n]
     return samples[username][n-5:n]
 
+@app.post("/user/{username}/samples/average_day")
+async def get_user_samples_as_average_day(username: str, req_params: resources.AverageDayParams, user: User = Security(get_authorized_user, scopes=['samples'])):
+    check_username(username, user)
+    lazy_load_user_data(username)
+    try:
+        hours = [datetime.strptime(h, "%H:%M").time() for h in req_params.hours]
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Hours format not respected : HH:MM"
+        )
+    return utils.get_user_average_day_user_samples(user, samples, hours, req_params.error)
+
 @app.get("/user/{username}/stats")
 def read_user_stats(username: str, user: User = Security(get_authorized_user, scopes=['profile'])):
     check_username(username, user)
