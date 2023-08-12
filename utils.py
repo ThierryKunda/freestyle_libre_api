@@ -198,6 +198,10 @@ def change_user_password(db: Session, change_req_id: str, username: str, new_pas
     db.commit()
     return resources.PasswordResponse(is_success=True, description="Password successfully changed/set. 😁")
 
+def datetime_included_in_hour_interval(d: dt, t: time, e: int):
+    ref_date = dt(year=d.year, month=d.month, day=d.day, hour=t.hour, minute=t.minute)
+    return (d - tdelta(minutes=e)) <= ref_date <= (d + tdelta(minutes=e))
+
 def get_user_goals(db: Session, user: db_models.User):
     goals: list[db_models.Goal] = db.query(db_models.Goal).filter_by(user_id=user.id).all()
     return [
