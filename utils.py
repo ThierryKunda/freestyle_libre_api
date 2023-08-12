@@ -1,6 +1,6 @@
 import hashlib
 from typing import Literal
-from datetime import datetime as dt, timedelta as tdelta
+from datetime import datetime as dt, time, timedelta as tdelta
 from fastapi import HTTPException, status
 
 from sqlalchemy.orm import Session
@@ -9,6 +9,7 @@ from sqlalchemy import desc
 import models.database as db_models
 import models.resources as resources
 
+from statistics import mean
 import pandas as pd
 
 def encode_secret(secret: str) -> str:
@@ -201,6 +202,26 @@ def change_user_password(db: Session, change_req_id: str, username: str, new_pas
 def datetime_included_in_hour_interval(d: dt, t: time, e: int):
     ref_date = dt(year=d.year, month=d.month, day=d.day, hour=t.hour, minute=t.minute)
     return (d - tdelta(minutes=e)) <= ref_date <= (d + tdelta(minutes=e))
+
+def average_from_samples(samples: list[resources.BloodGlucoseSample]):
+    return mean([s.value for s in samples])
+
+def get_user_average_day_user_samples(user: db_models.User, all_samples: dict[str, list[resources.BloodGlucoseSample]], hours: list[time], error: int):
+    user_samples = all_samples[user.firstname+'_'+user.lastname]
+    # Aggregate samples included in specific time interval
+    samples_grouped_by_time_interval = {
+        h: [s for s in user_samples if datetime_included_in_hour_interval(s.sampling_date, h, error)]
+        for h in hours
+    }
+    # Compute the average for each interval
+    samples_average_by_time_interval = {
+        s: average_from_samples(samples_grouped_by_time_interval[s])
+        for s in samples_grouped_by_time_interval
+    }
+    return [
+        resources.AverageDaySample(hour=s, average_value=samples_average_by_time_interval[s])
+        for s in samples_average_by_time_interval
+    ]
 
 def get_user_goals(db: Session, user: db_models.User):
     goals: list[db_models.Goal] = db.query(db_models.Goal).filter_by(user_id=user.id).all()
