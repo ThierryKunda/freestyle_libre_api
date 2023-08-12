@@ -48,7 +48,7 @@ class AverageDayParams(BaseModel):
 
 class AverageDaySample(BaseModel):
     hour: time
-    average_value: int
+    average_value: float
 
 class UpdatedKey(Enum):
     title = 'title'
