@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import pandera as pa
 from pandera.typing import Series, Index, DataFrame
+from pandera.errors import SchemaError, SchemaErrorReason
+import sys
 
 class InvalidDataException(Exception):
     """Exception class for invalid data :
@@ -33,7 +35,7 @@ user_data_schema = pa.DataFrameSchema({
     "Cétone mmol/L": pa.Column(float, nullable=True),
     "Insuline repas (unités)": pa.Column(float, nullable=True),
     "Correction insuline (unités)": pa.Column(float, coerce=True, nullable=True),
-    "Insuline modifiée par l'utilisateur (unités)": pa.Column(float, nullable=True)
+    "Insuline modifiée par l'utilisateur (unités": pa.Column(float, nullable=True)
 },
 coerce=True,
 strict=True)
@@ -51,4 +53,10 @@ if __name__ == "__main__":
         "Insuline à action rapide (unités)": convert_insulin,
         }
     )
-    user_data_schema.validate(df)
+    # user_data_schema.validate(df)
+    try:
+        user_data_schema.validate(df)
+    except SchemaError as e:
+        column_name: str = e.failure_cases['failure_case'][0]
+        print(column_name)
+        print(e.reason_code)
