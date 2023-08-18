@@ -18,6 +18,9 @@ class CreateUser(BaseModel):
     lastname: str
     password: str
 
+class UserDataFileUpdateResponse(BaseModel):
+    message: str
+
 class Token(BaseModel):
     access_token: str
     token_type: str
