@@ -341,6 +341,15 @@ async def remove_user_account(db: Session = Depends(get_db), user: User = Securi
     print("User deleted")
     return all_info
 
+@app.post("/users/{username}/raw_data")
+async def add_or_update_user_data_file(username: str, file: UploadFile, user: User = Security(get_authorized_user, scopes=['samples'])):
+    check_username(username, user)
+    content_bytes = await file.read()
+    f = open(os.path.join("users_data", f"{username}.csv"), "wb")
+    f.write(content_bytes)
+    return resources.UserDataFileUpdateResponse(message="User data file was successfully updated.")
+
+
 @app.post("/submit_password_change")
 async def req_new_password(req_params: resources.ReqNewPasswordParameters, db: Session = Depends(get_db)):
     return utils.request_new_password(db, req_params.email)
