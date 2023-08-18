@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import datetime
 
 from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Depends, Security, status
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, SecurityScopes
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -340,6 +340,11 @@ async def remove_user_account(db: Session = Depends(get_db), user: User = Securi
     all_info = utils.remove_user(db, user)
     print("User deleted")
     return all_info
+
+@app.get("/users/{username}/raw_data")
+async def get_user_data_file(username: str, user: User = Security(get_authorized_user, scopes=['samples'])):
+    check_username(username, user)
+    return FileResponse(os.path.join("users_data", f"{username}.csv"))
 
 @app.post("/users/{username}/raw_data")
 async def add_or_update_user_data_file(username: str, file: UploadFile, user: User = Security(get_authorized_user, scopes=['samples'])):
