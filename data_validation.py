@@ -47,7 +47,6 @@ def convert_insulin(value: str) -> np.float64:
         return np.float64(float(v_formatted))
 
 async def validate_data_from_upload(file: UploadFile):
-    print("ok 1")
     bytes_data = await file.read()
     df = pd.read_csv(BytesIO(bytes_data), header=1, low_memory=False, converters={
         "Insuline à action longue (unités)": convert_insulin,
@@ -57,7 +56,6 @@ async def validate_data_from_upload(file: UploadFile):
     try:
         user_data_schema.validate(df, lazy=True)
     except SchemaErrors as e:
-        print(e.failure_cases)
         column_names: list[str] = list(e.failure_cases['column'])
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
