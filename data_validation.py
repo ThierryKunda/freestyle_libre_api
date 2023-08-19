@@ -1,9 +1,9 @@
+from fastapi import HTTPException, UploadFile, status
 import numpy as np
 import pandas as pd
 import pandera as pa
-from pandera.typing import Series, Index, DataFrame
-from pandera.errors import SchemaError, SchemaErrorReason
-import sys
+from pandera.errors import SchemaError, SchemaErrors
+from io import BytesIO
 
 class InvalidDataException(Exception):
     """Exception class for invalid data :
@@ -21,7 +21,7 @@ user_data_schema = pa.DataFrameSchema({
     "Numéro de série": pa.Column(str),
     "Horodatage de l'appareil": pa.Column(str),
     "Type d'enregistrement": pa.Column(int),
-    "Historique de la glycémie mg/dL": pa.Column(float, pa.Check(positive_value), nullable=True),
+    "Historique de la glycémie mg/dL": pa.Column(float, pa.Check(positive_value, title="positive_value"), nullable=True),
     "Numérisation de la glycémie mg/dL": pa.Column(float, pa.Check(positive_value), nullable=True),
     "Insuline à action rapide sans valeur numérique": pa.Column(str, nullable=True),
     "Insuline à action rapide (unités)": pa.Column(float, nullable=True),
@@ -35,7 +35,7 @@ user_data_schema = pa.DataFrameSchema({
     "Cétone mmol/L": pa.Column(float, nullable=True),
     "Insuline repas (unités)": pa.Column(float, nullable=True),
     "Correction insuline (unités)": pa.Column(float, coerce=True, nullable=True),
-    "Insuline modifiée par l'utilisateur (unités": pa.Column(float, nullable=True)
+    "Insuline modifiée par l'utilisateur (unités)": pa.Column(float, nullable=True)
 },
 coerce=True,
 strict=True)
@@ -46,6 +46,27 @@ def convert_insulin(value: str) -> np.float64:
         v_formatted = value.replace(",", ".")
         return np.float64(float(v_formatted))
 
+async def validate_data_from_upload(file: UploadFile):
+    print("ok 1")
+    bytes_data = await file.read()
+    df = pd.read_csv(BytesIO(bytes_data), header=1, low_memory=False, converters={
+        "Insuline à action longue (unités)": convert_insulin,
+        "Insuline à action rapide (unités)": convert_insulin,
+        }
+    )
+    try:
+        user_data_schema.validate(df, lazy=True)
+    except SchemaErrors as e:
+        print(e.failure_cases)
+        column_names: list[str] = list(e.failure_cases['column'])
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "column_name": column_names,
+                "errors": [err.value for err in e.error_counts],
+                "failure_cases": [str(err.failure_cases['failure_case'][0]) for err in e.schema_errors],
+            }
+        )
 
 if __name__ == "__main__":
     df = pd.read_csv("./tests/glucose_real_data.csv", header=0, low_memory=False, converters={
