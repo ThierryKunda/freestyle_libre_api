@@ -342,12 +342,12 @@ async def remove_user_account(db: Session = Depends(get_db), user: User = Securi
     print("User deleted")
     return all_info
 
-@app.get("/users/{username}/raw_data")
+@app.get("/user/{username}/raw_data")
 async def get_user_data_file(username: str, user: User = Security(get_authorized_user, scopes=['samples'])):
     check_username(username, user)
     return FileResponse(os.path.join("users_data", f"{username}.csv"))
 
-@app.post("/users/{username}/raw_data")
+@app.post("/user/{username}/raw_data")
 async def add_or_update_user_data_file(username: str, file: UploadFile, user: User = Security(get_authorized_user, scopes=['samples'])):
     check_username(username, user)
     await validate_data_from_upload(file)
