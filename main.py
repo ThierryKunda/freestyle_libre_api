@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy import create_engine
+from data_validation import validate_data_from_upload
 
 from models import resources
 from models.database import Base, User
@@ -349,6 +350,7 @@ async def get_user_data_file(username: str, user: User = Security(get_authorized
 @app.post("/users/{username}/raw_data")
 async def add_or_update_user_data_file(username: str, file: UploadFile, user: User = Security(get_authorized_user, scopes=['samples'])):
     check_username(username, user)
+    await validate_data_from_upload(file)
     content_bytes = await file.read()
     f = open(os.path.join("users_data", f"{username}.csv"), "wb")
     f.write(content_bytes)
