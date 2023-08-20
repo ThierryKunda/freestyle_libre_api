@@ -1,12 +1,13 @@
 from router_dependencies import *
 import env
 
-from routers import user, stats
+from routers import user, stats, raw_data
 
 app = FastAPI()
 
 app.include_router(user.router)
 app.include_router(stats.router)
+app.include_router(raw_data.router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -193,22 +194,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
             }
         )
     return resources.Token(access_token=tk["value"], token_type="bearer")
-
-
-
-@app.get("/user/{username}/raw_data")
-async def get_user_data_file(username: str, user: User = Security(get_authorized_user, scopes=['samples'])):
-    check_username(username, user)
-    return FileResponse(os.path.join("users_data", f"{username}.csv"))
-
-@app.post("/user/{username}/raw_data")
-async def add_or_update_user_data_file(username: str, file: UploadFile, user: User = Security(get_authorized_user, scopes=['samples'])):
-    check_username(username, user)
-    content_bytes = await validate_data_from_upload(file)
-    f = open(os.path.join("users_data", f"{username}.csv"), "wb")
-    f.write(content_bytes)
-    return resources.UserDataFileUpdateResponse(message="User data file was successfully updated.")
-
 
 @app.post("/submit_password_change")
 async def req_new_password(req_params: resources.ReqNewPasswordParameters, db: Session = Depends(get_db)):
