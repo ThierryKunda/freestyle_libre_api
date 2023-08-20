@@ -248,8 +248,8 @@ async def upload_csv_data(
         file_content = await personal_data.read()
         f_data.write(file_content)
         f_data.close()
-        samples[f'{firstname}_{lastname}'] = api.samples_from_csv(filepath=os.path.join("users_data", p))
-        stats[f'{firstname}_{lastname}'] = resources.Stats.from_sample_collection(samples[f"{firstname}_{lastname}"])
+        samples_collection[f'{firstname}_{lastname}'] = api.samples_from_csv(filepath=os.path.join("users_data", p))
+        stats_collection[f'{firstname}_{lastname}'] = resources.Stats.from_sample_collection(samples_collection[f"{firstname}_{lastname}"])
         # Web page
         f = open("pages/file_uploaded.html", "r")
         content = f.read().replace("[[content]]", personal_data.filename)
@@ -317,7 +317,7 @@ def read_user_stats(username: str, user: User = Security(get_authorized_user, sc
     check_username(username, user)
     lazy_load_user_data(username)
     lazy_load_user_stats(username)
-    return stats[username]
+    return stats_collection[username]
 
 @app.get("/users/stats")
 def read_stats(_: User = Security(get_authorized_user, scopes=['profile'])):
@@ -331,7 +331,7 @@ def read_trend_hours(username: str, h1_string: str, h2_string: str, error: int, 
     lazy_load_user_data(username)
     h1 = datetime.strptime(h1_string, "%d/%m/%Y-%H:%M")
     h2 = datetime.strptime(h2_string, "%d/%m/%Y-%H:%M")
-    return resources.HourTrend.from_hours(h1,h2,samples[username], error)
+    return resources.HourTrend.from_hours(h1,h2,samples_collection[username], error)
 
 @app.get("/user/{username}/trend/days_interval")
 def read_trend_days(username: str, day1_string: str, day2_string: str, error: int, user: User = Security(get_authorized_user, scopes=['samples'])):
@@ -340,13 +340,13 @@ def read_trend_days(username: str, day1_string: str, day2_string: str, error: in
     username = user.firstname + '_' + user.lastname
     day1 = datetime.strptime(day1_string, "%d/%m/%Y")
     day2 = datetime.strptime(day2_string, "%d/%m/%Y")
-    return resources.HourTrend.from_hours(day1,day2,samples[username], error)
+    return resources.HourTrend.from_hours(day1,day2,samples_collection[username], error)
 
 @app.get("/user/{username}/trend/months_interval")
 def read_trend_months(username: str, month1: int, year1: int, month2: int, year2: int, error: int, user: User = Security(get_authorized_user, scopes=['samples'])):
     check_username(username, user)
     lazy_load_user_data(username)
-    return resources.MonthTrend.from_months(month1, year1, month2, year2, samples[username], error)
+    return resources.MonthTrend.from_months(month1, year1, month2, year2, samples_collection[username], error)
 
 @app.get("/user/{username}/goals")
 def get_all_goals(username: str, db: Session = Depends(get_db), user: User = Security(get_authorized_user, scopes=['goals'])) -> list[resources.Goal]:
