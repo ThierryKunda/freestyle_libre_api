@@ -27,3 +27,42 @@ def get_db():
         yield db
     finally:
         db.close()
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", scopes={
+    "profile": "Read information about user profile",
+    "samples": "Read samples related to a user",
+    "goals": "Read user goals",
+    "stats": "Read user statistics"
+})
+
+async def get_authorized_user(security_scopes: SecurityScopes, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)) -> User:
+    utils.update_token_last_used_date(db, token)
+    if security_scopes.scopes:
+        authentificate_value = f'Bearer scope="{security_scopes.scope_str}"'
+        rights = utils.get_token_rights(db, token)
+        unauth_expection = HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permission to perform any action on specified resource(s)",
+            headers={"WWW-Authenticate": authentificate_value}
+        )
+        if rights:
+            for r in security_scopes.scopes:
+                if not rights[r]:
+                    raise unauth_expection
+                    # if not r in security_scopes.scopes:
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Token does not exist or is already expired",
+                headers={"WWW-Authentificate": authentificate_value}
+            )
+    else:
+        authentificate_value = 'Bearer'
+    user = utils.get_user_from_token(db, token)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": authentificate_value}
+        )
+    return user
