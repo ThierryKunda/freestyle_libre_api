@@ -1,13 +1,14 @@
 from router_dependencies import *
 import env
 
-from routers import user, stats, auth
+from routers import user, stats, auth, doc
 
 app = FastAPI()
 
 app.include_router(user.router)
 app.include_router(stats.router)
 app.include_router(auth.router)
+app.include_router(doc.router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -171,55 +172,6 @@ async def upload_csv_data(
         # Displaying error page if a row has an invalid value
         return render_html_error_message("one or more rows have an invalid value", 400)
 
-@app.get("/doc/resources")
-async def get_all_resources_info(db: Session = Depends(get_db)):
-    return utils.get_all_resources(db)
-
-@app.get("/doc/resource/{resource_name}/features")
-async def get_resource_features(resource_name: str, db: Session = Depends(get_db)):
-    res = utils.get_user_features_from_resource_name(resource_name, db)
-    if res:
-        return res
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"The resource \"{resource_name}\" does not exist"
-        )
-    
-@app.get("/doc/admin/resources/{resource_name}/features")
-async def get_admin_resource_features(resource_name: str, user: User = Security(get_authorized_user), db: Session = Depends(get_db)):
-    res = utils.get_admin_features_from_resource_name(resource_name, db, user)
-    if res:
-        return res
-    elif res is False:
-        pass
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"You do not have the right to perform this action."
-        )
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"The resource '{resource_name}' does not exist."
-        )
-    
-@app.get("/doc/general_information")
-async def get_doc_information(db: Session = Depends(get_db)):
-    res = utils.get_doc_info(db)
-    if not res:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Missing documentation."
-        )
-    return res
-
-@app.get("/doc/resources_data")
-async def get_resources_data(db: Session = Depends(get_db), user: User = Security(get_authorized_user)):
-    return utils.get_resources_info(db, user.id)
-
-@app.get("/doc/signatures")
-async def get_secret_signatures(db: Session = Depends(get_db), user: User = Security(get_authorized_user)):
-    return utils.get_signatures(db, user.id)
 
 # @app.get("/doc/db_metadata")
 # async def get_db_versioning(db: Session = Depends(get_db), user: User = Security(get_authorized_user)):
