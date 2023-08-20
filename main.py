@@ -24,26 +24,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", scopes={
     "stats": "Read user statistics"
 })
 
-def lazy_load_user_data(username: str):
-    if username not in samples:
-        user_data = api.samples_from_csv(filepath=os.path.join("users_data", f"{username}.csv"))
-        if user_data:
-            samples[username] = user_data
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User data not found, based on username"
-            )
-def lazy_load_user_stats(username):
-    if username not in stats:
-        if username in samples:
-            stats[username] = resources.Stats.from_sample_collection(samples[username])
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User data not found, based on username"
-            )
-
 def render_html_error_message(message: str, status_code: int):
     f = open("pages/error.html", "r")
     content = f.read().replace("[[error_description]]", message)
