@@ -4,12 +4,12 @@ from router_dependencies import *
 
 router = APIRouter(tags=["Goals"])
 
-@router.get("/user/{username}/goals")
+@router.get("/{username}/goals")
 def get_all_goals(username: str, db: Session = Depends(get_db), user: User = Security(get_authorized_user, scopes=['goals'])) -> list[resources.Goal]:
     check_username(username, user)
     return utils.get_user_goals(db, user)
 
-@router.post("/user/{username}/goal/")
+@router.post("/{username}/goal/")
 def add_new_goal(username: str, goal: resources.Goal, user: User = Security(get_authorized_user, scopes=['goals']), db: Session = Depends(get_db)) -> resources.Goal:
     check_username(username, user)
     g = utils.add_new_goal(
@@ -41,7 +41,7 @@ def add_new_goal(username: str, goal: resources.Goal, user: User = Security(get_
     goal.id = g.id
     return goal
 
-@router.delete("/user/{username}/goal/{id}")
+@router.delete("/{username}/goal/{id}")
 def remove_goal(username: str, id: int, user: User = Security(get_authorized_user, scopes=['goals']), db: Session = Depends(get_db)) -> resources.Goal:
     check_username(username, user)
     g = utils.remove_goal(db, id)
@@ -52,7 +52,7 @@ def remove_goal(username: str, id: int, user: User = Security(get_authorized_use
         )
     return g
 
-@router.put("/user/{username}/goal/{id}")
+@router.put("/{username}/goal/{id}")
 def update_goal_element(username: str, id: int, updatedKey: resources.UpdatedKey, new_value: resources.GoalAttr, user: User = Security(get_authorized_user, scopes=['goals']), db: Session = Depends(get_db)) -> resources.Goal:
     check_username(username, user)
     g = utils.update_goal_attribute(db, id, updatedKey, new_value)
