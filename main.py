@@ -257,7 +257,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     firstname, lastname = form_data.username.split("_")
     # Scopes format -> profile samples goals stats
     access_rights = map_access_form_inputs(inputs=form_data.scopes, in_place=True)
-    print(access_rights)
     tk = utils.add_new_token(db, firstname, lastname, form_data.password, access_rights[0], access_rights[1], access_rights[2], access_rights[3])
     if not tk:
         raise HTTPException(
