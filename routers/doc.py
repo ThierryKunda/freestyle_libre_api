@@ -2,13 +2,13 @@ from fastapi import APIRouter
 
 from router_dependencies import *
 
-router = APIRouter(tags=["Documentation"])
+router = APIRouter(prefix='/doc', tags=["Documentation"])
 
-@router.get("/doc/resources")
+@router.get("/resources")
 async def get_all_resources_info(db: Session = Depends(get_db)):
     return utils.get_all_resources(db)
 
-@router.get("/doc/resource/{resource_name}/features")
+@router.get("/resource/{resource_name}/features")
 async def get_resource_features(resource_name: str, db: Session = Depends(get_db)):
     res = utils.get_user_features_from_resource_name(resource_name, db)
     if res:
@@ -19,7 +19,7 @@ async def get_resource_features(resource_name: str, db: Session = Depends(get_db
             detail=f"The resource \"{resource_name}\" does not exist"
         )
     
-@router.get("/doc/admin/resources/{resource_name}/features")
+@router.get("/admin/resources/{resource_name}/features")
 async def get_admin_resource_features(resource_name: str, user: User = Security(get_authorized_user), db: Session = Depends(get_db)):
     res = utils.get_admin_features_from_resource_name(resource_name, db, user)
     if res:
@@ -37,7 +37,7 @@ async def get_admin_resource_features(resource_name: str, user: User = Security(
         )
 
 
-@router.get("/doc/general_information")
+@router.get("/general_information")
 async def get_doc_information(db: Session = Depends(get_db)):
     res = utils.get_doc_info(db)
     if not res:
@@ -47,11 +47,11 @@ async def get_doc_information(db: Session = Depends(get_db)):
         )
     return res
 
-@router.get("/doc/resources_data")
+@router.get("/resources_data")
 async def get_resources_data(db: Session = Depends(get_db), user: User = Security(get_authorized_user)):
     return utils.get_resources_info(db, user.id)
 
-@router.get("/doc/signatures")
+@router.get("/signatures")
 async def get_secret_signatures(db: Session = Depends(get_db), user: User = Security(get_authorized_user)):
     return utils.get_signatures(db, user.id)
 
