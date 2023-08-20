@@ -1,11 +1,12 @@
 from router_dependencies import *
 import env
 
-from routers import user
+from routers import user, stats
 
 app = FastAPI()
 
 app.include_router(user.router)
+app.include_router(stats.router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -291,20 +292,6 @@ async def req_new_password(req_params: resources.ReqNewPasswordParameters, db: S
 @app.put("/user/{username}/set_new_password")
 async def change_password(username: str, change_req_id: str, req_params: resources.ChangePasswordParameters, db: Session = Depends(get_db)):
     return utils.change_user_password(db, change_req_id, username, req_params.new_password)
-
-@app.get("/user/{username}/stats")
-def read_user_stats(username: str, user: User = Security(get_authorized_user, scopes=['profile'])):
-    check_username(username, user)
-    lazy_load_user_data(username)
-    lazy_load_user_stats(username)
-    return stats_collection[username]
-
-@app.get("/users/stats")
-def read_stats(_: User = Security(get_authorized_user, scopes=['profile'])):
-    # Load data from all users
-    samples = {data.split('_')[0]+"_"+data.split('_')[1]: api.samples_from_csv(filepath=os.path.join("users_data", f"{data}")) for data in os.listdir("users_data")}
-    return resources.Stats.from_all_users_samples(samples)
-
 
 @app.get("/doc/resources")
 async def get_all_resources_info(db: Session = Depends(get_db)):
