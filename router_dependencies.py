@@ -66,3 +66,32 @@ async def get_authorized_user(security_scopes: SecurityScopes, db: Session = Dep
             headers={"WWW-Authenticate": authentificate_value}
         )
     return user
+
+samples_collection: dict[str, list[resources.BloodGlucoseSample]] = {}
+stats_collection = {key: resources.Stats.from_sample_collection(samples_collection[key]) for key in samples_collection}
+
+def check_username(username: str, user: User) -> None:
+    if username != user.firstname + '_' + user.lastname:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid token with username")
+
+def lazy_load_user_data(username: str):
+    if username not in samples_collection:
+        user_data = api.samples_from_csv(filepath=os.path.join("users_data", f"{username}.csv"))
+        if user_data:
+            samples_collection[username] = user_data
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User data not found, based on username"
+            )
+        
+def lazy_load_user_stats(username):
+    if username not in stats_collection:
+        if username in samples_collection:
+            stats_collection[username] = resources.Stats.from_sample_collection(samples_collection[username])
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User data not found, based on username"
+            )
+        
