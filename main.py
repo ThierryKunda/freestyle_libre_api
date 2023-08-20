@@ -1,13 +1,12 @@
 from router_dependencies import *
 import env
 
-from routers import user, stats, raw_data
+from routers import user, stats
 
 app = FastAPI()
 
 app.include_router(user.router)
 app.include_router(stats.router)
-app.include_router(raw_data.router)
 
 app.add_middleware(
     CORSMiddleware,

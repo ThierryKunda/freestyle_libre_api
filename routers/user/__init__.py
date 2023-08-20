@@ -1,10 +1,11 @@
 from router_dependencies import *
-from routers.user import samples, trend, goal
+from routers.user import samples, trend, goal, raw_data
 
 router = APIRouter(prefix='/user', tags=["User"])
 router.include_router(samples.router)
 router.include_router(trend.router)
 router.include_router(goal.router)
+router.include_router(raw_data.router)
 
 @router.get("")
 async def get_user_infos(user: User = Security(get_authorized_user, scopes=['profile'])):
