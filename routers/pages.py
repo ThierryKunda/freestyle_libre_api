@@ -140,7 +140,7 @@ async def upload_csv_data(
         file_content = await validate_data_from_upload(personal_data)
         f_data.write(file_content)
         f_data.close()
-        samples_collection[f'{firstname}_{lastname}'] = api.samples_from_csv(filepath=os.path.join("users_data", p))
+        samples_collection[f'{firstname}_{lastname}'] = csv_data.samples_from_csv(filepath=os.path.join("users_data", p))
         stats_collection[f'{firstname}_{lastname}'] = resources.Stats.from_sample_collection(samples_collection[f"{firstname}_{lastname}"])
         # Web page
         f = open("pages/file_uploaded.html", "r")

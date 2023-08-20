@@ -2,7 +2,7 @@ import os
 from typing import Optional
 from datetime import datetime
 
-from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Depends, Security, status, APIRouter
+from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Depends, Security, status, csvRouter
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, SecurityScopes
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,7 +14,7 @@ from data_validation import validate_data_from_upload
 from models import resources
 from models.database import Base, User
 
-import api, utils
+import csv_data, utils
 import env
 
 engine = create_engine(env.SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
@@ -106,7 +106,7 @@ def check_username(username: str, user: User) -> None:
 
 def lazy_load_user_data(username: str):
     if username not in samples_collection:
-        user_data = api.samples_from_csv(filepath=os.path.join("users_data", f"{username}.csv"))
+        user_data = csv_data.samples_from_csv(filepath=os.path.join("users_data", f"{username}.csv_data"))
         if user_data:
             samples_collection[username] = user_data
         else:
