@@ -1,4 +1,4 @@
-from routers.router_imports import *
+from router_dependencies import *
 import env
 
 from routers import user
