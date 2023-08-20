@@ -65,6 +65,7 @@ async def validate_data_from_upload(file: UploadFile):
                 "failure_cases": [str(err.failure_cases['failure_case'][0]) for err in e.schema_errors],
             }
         )
+    return bytes_data
 
 if __name__ == "__main__":
     df = pd.read_csv("./tests/glucose_real_data.csv", header=0, low_memory=False, converters={
