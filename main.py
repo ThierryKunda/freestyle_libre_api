@@ -19,8 +19,3 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*']
 )
-
-
-# @app.get("/doc/db_metadata")
-# async def get_db_versioning(db: Session = Depends(get_db), user: User = Security(get_authorized_user)):
-#     pass

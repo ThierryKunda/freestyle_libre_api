@@ -54,3 +54,7 @@ async def get_resources_data(db: Session = Depends(get_db), user: User = Securit
 @router.get("/doc/signatures")
 async def get_secret_signatures(db: Session = Depends(get_db), user: User = Security(get_authorized_user)):
     return utils.get_signatures(db, user.id)
+
+# @app.get("/doc/db_metadata")
+# async def get_db_versioning(db: Session = Depends(get_db), user: User = Security(get_authorized_user)):
+#     pass
