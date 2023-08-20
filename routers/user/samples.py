@@ -30,7 +30,7 @@ async def read_latest_samples(username: str, n_latest: Optional[int] = None, use
         return samples_collection[username][n-(n_latest-1):n]
     return samples_collection[username][n-5:n]
 
-@router.post("/user/{username}/samples/average_day")
+@router.post("/{username}/samples/average_day")
 async def get_user_samples_as_average_day(username: str, req_params: resources.AverageDayParams, user: User = Security(get_authorized_user, scopes=['samples'])):
     check_username(username, user)
     lazy_load_user_data(username)
