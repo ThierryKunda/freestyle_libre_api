@@ -16,8 +16,6 @@ app.add_middleware(
     allow_headers=['*']
 )
 
-samples: dict[str, list[resources.BloodGlucoseSample]] = {}
-stats = {key: resources.Stats.from_sample_collection(samples[key]) for key in samples}
 # Default prefixes : profile samples goals stats
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", scopes={
     "profile": "Read information about user profile",
