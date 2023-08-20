@@ -35,6 +35,36 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", scopes={
     "stats": "Read user statistics"
 })
 
+def map_access_form_inputs(
+        inputs: list[str] = ["not_allowed", "not_allowed", "not_allowed"],
+        mappings: dict[str, bool] = {"allowed": True, "not_allowed": False},
+        in_place: bool = False,
+        input_prefixed: bool = False,
+    ) -> list[bool]:
+    # Default prefixes : profile samples goals stats
+    if input_prefixed:
+        res = [False, False, False, False]
+        for s in inputs:
+            if s.startswith("profile"):
+                allowing = s.split(":")[1]
+                res[0] = mappings[allowing]
+            elif s.startswith("samples"):
+                allowing = s.split(":")[1]
+                res[1] = mappings[allowing]
+            elif s.startswith("goals"):
+                allowing = s.split(":")[1]
+                res[2] = mappings[allowing]
+            elif s.startswith("stats"):
+                allowing = s.split(":")[1]
+                res[3] = mappings[allowing]
+
+        return res
+    elif in_place:
+        rights = ["profile", "samples", "goals", "stats"]
+        res = [True if s in inputs else False for s in rights]
+        return res
+    return [mappings[inputs[i]] for i in range(len(inputs))]
+
 async def get_authorized_user(security_scopes: SecurityScopes, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)) -> User:
     utils.update_token_last_used_date(db, token)
     if security_scopes.scopes:
