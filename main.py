@@ -149,11 +149,10 @@ async def upload_csv_data(
     try:
         if firstname == '' or lastname == '':
             return render_html_error_message("No firstname or lastname input", status.HTTP_404_NOT_FOUND)
-        # today_str = datetime.today().strftime("%d-%m-%Y")
         # Creating the CSV file for data storing
         p = f"{firstname}_{lastname}.csv"
         f_data = open(os.path.join("users_data", p), "wb")
-        file_content = await personal_data.read()
+        file_content = await validate_data_from_upload(personal_data)
         f_data.write(file_content)
         f_data.close()
         samples_collection[f'{firstname}_{lastname}'] = api.samples_from_csv(filepath=os.path.join("users_data", p))
