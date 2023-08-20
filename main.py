@@ -314,47 +314,6 @@ async def req_new_password(req_params: resources.ReqNewPasswordParameters, db: S
 async def change_password(username: str, change_req_id: str, req_params: resources.ChangePasswordParameters, db: Session = Depends(get_db)):
     return utils.change_user_password(db, change_req_id, username, req_params.new_password)
 
-@app.get("/user/{username}/samples")
-async def read_samples(username: str, day: Optional[str] = None, user: User = Security(get_authorized_user, scopes=['samples'])) -> list[resources.BloodGlucoseSample]:
-    check_username(username, user)
-    lazy_load_user_data(username)
-    if day is None:
-        res = list(filter(lambda d: d.sampling_date.date() == datetime.today().date(), samples[username]))
-        if len(res) == 0:
-            raise HTTPException(status_code=404)
-        return res
-    try:
-        return list(filter(lambda d: datetime.strptime(day, "%d/%m/%Y").date() == d.sampling_date.date(), samples[username]))
-    except ValueError:
-        error_message = {
-            "resource_type": "sample",
-            "username": username,
-            "error_description": "The date input is invalid" 
-        }
-        raise HTTPException(status_code=400, detail=error_message)
-
-@app.get("/user/{username}/samples/latest")
-async def read_latest_samples(username: str, n_latest: Optional[int] = None, user: User = Security(get_authorized_user, scopes=['samples'])):
-    check_username(username, user)
-    lazy_load_user_data(username)
-    n = len(samples[username])
-    if n_latest:
-        return samples[username][n-(n_latest-1):n]
-    return samples[username][n-5:n]
-
-@app.post("/user/{username}/samples/average_day")
-async def get_user_samples_as_average_day(username: str, req_params: resources.AverageDayParams, user: User = Security(get_authorized_user, scopes=['samples'])):
-    check_username(username, user)
-    lazy_load_user_data(username)
-    try:
-        hours = [datetime.strptime(h, "%H:%M").time() for h in req_params.hours]
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Hours format not respected : HH:MM"
-        )
-    return utils.get_user_average_day_user_samples(user, samples, hours, req_params.error)
-
 @app.get("/user/{username}/stats")
 def read_user_stats(username: str, user: User = Security(get_authorized_user, scopes=['profile'])):
     check_username(username, user)
