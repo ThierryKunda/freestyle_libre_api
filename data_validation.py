@@ -32,7 +32,7 @@ user_data_schema = pa.DataFrameSchema({
     "Insuline à action longue (unités)": pa.Column(float, nullable=True),
     "Remarques": pa.Column(str, nullable=True),
     "Glycémie par bandelette mg/dL": pa.Column(float, pa.Check(positive_value), nullable=True),
-    "Cétone mmol/L": pa.Column(float, nullable=True),
+    "Cétone mmol/L": pa.Column(str, nullable=True),
     "Insuline repas (unités)": pa.Column(float, nullable=True),
     "Correction insuline (unités)": pa.Column(float, coerce=True, nullable=True),
     "Insuline modifiée par l'utilisateur (unités)": pa.Column(float, nullable=True)
