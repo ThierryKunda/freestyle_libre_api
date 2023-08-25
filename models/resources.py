@@ -39,7 +39,6 @@ class BloodGlucoseSample(BaseModel):
     device_name: str
     device_serial_number: str
     sampling_date: datetime
-    recording_type: int
     value: int
 
     def __repr__(self) -> str:
