@@ -2,7 +2,7 @@ import os
 from typing import Optional
 from datetime import datetime
 
-from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Depends, Security, status, csvRouter
+from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Depends, Security, status, APIRouter
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, SecurityScopes
 from fastapi.middleware.cors import CORSMiddleware
@@ -106,7 +106,7 @@ def check_username(username: str, user: User) -> None:
 
 def lazy_load_user_data(username: str):
     if username not in samples_collection:
-        user_data = csv_data.samples_from_csv(filepath=os.path.join("users_data", f"{username}.csv_data"))
+        user_data = csv_data.samples_from_csv(filepath=os.path.join("users_data", f"{username}.csv"))
         if user_data:
             samples_collection[username] = user_data
         else:
