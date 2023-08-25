@@ -29,7 +29,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
 
 @router.post("/submit_password_change")
 async def req_new_password(req_params: resources.ReqNewPasswordParameters, db: Session = Depends(get_db)):
-    return utils.request_new_password(db, req_params.email)
+    return utils.request_new_password(db, req_params.email_or_username)
 
 @router.post("/user/{username}/new_password")
 async def change_password(username: str, change_req_id: str, req_params: resources.ChangePasswordParameters, db: Session = Depends(get_db)):

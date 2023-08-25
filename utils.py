@@ -172,11 +172,16 @@ def remove_user(db: Session, existing_user: db_models.User):
         goals=all_goals
     )
 
-def request_new_password(db: Session, email: str):
-    user = db.query(db_models.User).filter_by(email=email).first()
+def request_new_password(db: Session, email_or_username: str):
+    try:
+        firstname, lastname = email_or_username.split("_")
+    except ValueError:
+        firstname, lastname = "", ""
+    user = db.query(db_models.User).filter((db_models.User.email == email_or_username) \
+                                           | ((db_models.User.firstname == firstname) & db_models.User.lastname == lastname)).first()
     if not user:
-        return resources.PasswordResponse(is_success=False, description="User not found 🕵️ : check your typed the email you used for registration.")
-    new_pw_req = db_models.NewPasswordReq(user_id=user.id, change_req_id=encode_secret(email+str(user.id)+str(dt.now())), expiration_date=dt.now()+tdelta(days=2))
+        return resources.PasswordResponse(is_success=False, description="User not found 🕵️ : check your typed the email/usnername you used for registration.")
+    new_pw_req = db_models.NewPasswordReq(user_id=user.id, change_req_id=encode_secret(email_or_username+str(user.id)+str(dt.now())), expiration_date=dt.now()+tdelta(days=2))
     db.add(new_pw_req)
     db.commit()
     return resources.PasswordResponse(is_success=True, description="Password successfully reset ! 😁 Check your email inbox to define a new one.")

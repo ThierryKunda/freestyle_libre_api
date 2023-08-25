@@ -241,7 +241,7 @@ class APIDocInfo(BaseModel):
     rights: list[BlockOfContent]
 
 class ReqNewPasswordParameters(BaseModel):
-    email: str
+    email_or_username: str
 
 class ChangePasswordParameters(BaseModel):
     new_password: str
