@@ -17,7 +17,13 @@ def encode_secret(secret: str) -> str:
 
 def get_user(db: Session, username: str, password: str):
     pw = encode_secret(password)
-    firstname, lastname = username.split("_")
+    try:
+        firstname, lastname = username.split("_")
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username should include \"_\" character between the firstname and the lastname."
+        )
     return db.query(db_models.User).filter_by(firstname=firstname, lastname=lastname, password=pw).first()
 
 def add_new_user(db: Session, firstname: str, lastname: str, password: str):
