@@ -25,7 +25,7 @@ def samples_from_csv(data_from: str = SourceType.CSVfile, **query_parameters) ->
         glucose_samples = df.iloc[:, :5].dropna()
         glucose_samples.sort_values(inplace=True, by="Horodatage de l'appareil")
         return [
-            BloodGlucoseSample(device_name=s[0], device_serial_number=s[1], sampling_date=s[2].to_pydatetime().strftime("%d/%m/%Y-%H:%M"), value=s[4])
+            BloodGlucoseSample(device_name=s[0], device_serial_number=s[1], sampling_date=s[2].to_pydatetime(), value=s[4])
             for s in glucose_samples.values.tolist()
         ]
     elif data_from == SourceType.sourceUri:
