@@ -14,5 +14,5 @@ def read_user_stats(username: str, user: User = Security(get_authorized_user, sc
 @router.get("/users/stats")
 def read_stats(_: User = Security(get_authorized_user, scopes=['profile'])):
     # Load data from all users
-    samples = {data.split('_')[0]+"_"+data.split('_')[1]: api.samples_from_csv(filepath=os.path.join("users_data", f"{data}")) for data in os.listdir("users_data")}
+    samples = {data.split('_')[0]+"_"+data.split('_')[1]: csv_data.samples_from_csv(filepath=os.path.join("users_data", f"{data}")) for data in os.listdir("users_data")}
     return resources.Stats.from_all_users_samples(samples)
