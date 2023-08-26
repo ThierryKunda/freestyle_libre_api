@@ -78,5 +78,3 @@ if __name__ == "__main__":
         user_data_schema.validate(df)
     except SchemaError as e:
         column_name: str = e.failure_cases['failure_case'][0]
-        print(column_name)
-        print(e.reason_code)

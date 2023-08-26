@@ -33,5 +33,4 @@ async def new_user(user: resources.CreateUser, db: Session = Depends(get_db)):
 @router.delete("")
 async def remove_user_account(db: Session = Depends(get_db), user: User = Security(get_authorized_user, scopes=['profile', 'samples', 'goals'])):
     all_info = utils.remove_user(db, user)
-    print("User deleted")
     return all_info

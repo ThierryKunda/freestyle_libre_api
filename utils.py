@@ -105,7 +105,6 @@ def get_user_devices(user: db_models.User) -> list[str]:
 
 def get_user_tokens(db: Session, user_id: str):
     user_tokens = db.query(db_models.Auth).filter_by(user_id=user_id).all()
-    print([tk.creation_date for tk in user_tokens])
     return [
         resources.TokenDisplay(
             app_name=tk.app_name,
@@ -143,7 +142,6 @@ def update_token_last_used_date(db: Session, token: str) -> bool:
 
 def remove_user(db: Session, existing_user: db_models.User):
     user = db.merge(existing_user)
-    print(db, existing_user)
     all_goals = db.query(db_models.Goal).filter_by(user_id=user.id).all()
     all_goals = [resources.Goal(
         id=g.id,
@@ -157,9 +155,7 @@ def remove_user(db: Session, existing_user: db_models.User):
     ) for g in all_goals]
     for g in all_goals:
         db.delete(g)
-    print(db, existing_user)
     db.delete(user)
-    print(db, existing_user)
     
     db.commit()
     return resources.AllUserInformation(
@@ -200,7 +196,6 @@ def change_user_password(db: Session, change_req_id: str, new_password: str):
     new_pw_req = db.query(db_models.NewPasswordReq).filter_by(change_req_id=change_req_id).first()
     if not new_pw_req:
         return resources.PasswordResponse(is_success=False, description="Invalid new password request. 🤔")
-    print(new_pw_req.change_applied)
     if new_pw_req.expiration_date < dt.now():
         return resources.PasswordResponse(is_success=False, description="Expired new password request. 🕰️")
     if new_pw_req.change_applied:
@@ -373,8 +368,6 @@ def get_user_features_from_resource_name(resource_name: str, db: Session):
     resource = db.query(db_models.DocResource).filter_by(resource_name=resource_name, admin_privilege=False).first()
     if resource:
         features = db.query(db_models.DocFeature).filter_by(resource_id=resource.id, admin_privilege=False).all()
-        for f in features:
-            print(f.http_verb.value)
         return [resources.Feature(
             title=f.title,
             available=f.available,
@@ -403,8 +396,6 @@ def get_admin_features_from_resource_name(resource_name: str, db: Session, user:
         resource = db.query(db_models.DocResource).filter_by(resource_name=resource_name).first()
         if resource:
             features = db.query(db_models.DocFeature).filter_by(resource_id=resource.id, admin_privilege=True).all()
-            for f in features:
-                print(f.http_verb.value)
             return [resources.Feature(
                 title=f.title,
                 available=f.available,
