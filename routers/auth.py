@@ -31,6 +31,11 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
 async def req_new_password(req_params: resources.ReqNewPasswordParameters, db: Session = Depends(get_db)):
     return utils.request_new_password(db, req_params.email_or_username)
 
-@router.post("/user/{username}/new_password")
-async def change_password(username: str, change_req_id: str, req_params: resources.ChangePasswordParameters, db: Session = Depends(get_db)):
-    return utils.change_user_password(db, change_req_id, username, req_params.new_password)
+@router.get("/new_password_request")
+async def get_password_request(change_req_id: str, db: Session = Depends(get_db)):
+    return utils.get_password_request(db, change_req_id)
+
+
+@router.post("/new_password/{change_req_id}")
+async def change_password(change_req_id: str, req_params: resources.ChangePasswordParameters, db: Session = Depends(get_db)):
+    return utils.change_user_password(db, change_req_id, req_params.new_password)

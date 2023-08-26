@@ -178,20 +178,26 @@ def request_new_password(db: Session, email_or_username: str):
     except ValueError:
         firstname, lastname = "", ""
     user = db.query(db_models.User).filter((db_models.User.email == email_or_username) \
-                                           | ((db_models.User.firstname == firstname) & db_models.User.lastname == lastname)).first()
+                                           | ((db_models.User.firstname == firstname) & (db_models.User.lastname == lastname))).first()
     if not user:
         return resources.PasswordResponse(is_success=False, description="User not found 🕵️ : check your typed the email/usnername you used for registration.")
     new_pw_req = db_models.NewPasswordReq(user_id=user.id, change_req_id=encode_secret(email_or_username+str(user.id)+str(dt.now())), expiration_date=dt.now()+tdelta(days=2))
     db.add(new_pw_req)
     db.commit()
-    return resources.PasswordResponse(is_success=True, description="Password successfully reset ! 😁 Check your email inbox to define a new one.")
+    return resources.PasswordResponse(is_success=True, description="Check your email inbox to define a new one. 😁")
 
-def change_user_password(db: Session, change_req_id: str, username: str, new_password: str):
-    firstname, lastname = username.split("_")
-    user = db.query(db_models.User).filter_by(firstname=firstname, lastname=lastname).first()
-    if not user:
-        return resources.PasswordResponse(is_success=False, description="User does not exist. 👻")
-    new_pw_req = db.query(db_models.NewPasswordReq).filter_by(user_id=user.id, change_req_id=change_req_id).first()
+def get_password_request(db: Session, change_req_id: str):
+    req = db.query(db_models.NewPasswordReq).filter_by(change_req_id=change_req_id).first()
+    if req:
+        return req
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Password request does not exist for the id provided : {change_req_id}."
+        )
+
+def change_user_password(db: Session, change_req_id: str, new_password: str):
+    new_pw_req = db.query(db_models.NewPasswordReq).filter_by(change_req_id=change_req_id).first()
     if not new_pw_req:
         return resources.PasswordResponse(is_success=False, description="Invalid new password request. 🤔")
     print(new_pw_req.change_applied)
@@ -199,6 +205,7 @@ def change_user_password(db: Session, change_req_id: str, username: str, new_pas
         return resources.PasswordResponse(is_success=False, description="Expired new password request. 🕰️")
     if new_pw_req.change_applied:
         return resources.PasswordResponse(is_success=False, description="New password request already used...🤷 Submit another one.")
+    user = new_pw_req.user
     user.password = encode_secret(new_password)
     new_pw_req.change_applied = True
     db.commit()
