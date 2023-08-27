@@ -268,3 +268,7 @@ class SecretSignature(BaseModel):
     id: int
     secret_value: str
     generation_date: str
+
+class UserRole(BaseModel):
+    is_admin: bool = False
+    admin_roles: list[AdminRole] | None = None

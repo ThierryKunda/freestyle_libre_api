@@ -469,6 +469,23 @@ def check_admin_is_allowed(db: Session, user_id: int, role_required: resources.A
     else:
         raise unauth
 
+def get_user_role(db: Session, user: db_models.User):
+    admin_role = db.query(db_models.AdminManagement).filter_by(user_id=user.id).first()
+    if admin_role:
+        roles = []
+        if admin_role.manage_backup:
+            roles.append(resources.AdminRole.backup)
+        if admin_role.manage_doc:
+            roles.append(resources.AdminRole.doc)
+        if admin_role.manage_user:
+            roles.append(resources.AdminRole.user)
+        return resources.UserRole(
+            is_admin=True,
+            admin_roles=roles
+        )
+    return resources.UserRole()
+
+
 def get_resources_info(db: Session, user_id: int):
     rs = db.query(db_models.DocResource).all()
     is_admin = db.query(db_models.AdminManagement).filter_by(user_id=user_id).order_by(desc(db_models.AdminManagement.edit_date)).first()

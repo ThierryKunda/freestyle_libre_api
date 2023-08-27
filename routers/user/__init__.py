@@ -34,3 +34,7 @@ async def new_user(user: resources.CreateUser, db: Session = Depends(get_db)):
 async def remove_user_account(db: Session = Depends(get_db), user: User = Security(get_authorized_user, scopes=['profile', 'samples', 'goals'])):
     all_info = utils.remove_user(db, user)
     return all_info
+
+@router.get("/role")
+async def get_user_role(db: Session = Depends(get_db), user: User = Security(get_authorized_user, scopes=['profile', 'samples', 'goals', 'stats'])):
+    return utils.get_user_role(db, user)
