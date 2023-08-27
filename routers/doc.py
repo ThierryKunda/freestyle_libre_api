@@ -8,6 +8,10 @@ router = APIRouter(prefix='/doc', tags=["Documentation"])
 async def get_all_resources_info(db: Session = Depends(get_db)):
     return utils.get_all_resources(db)
 
+@router.get("/features")
+async def get_all_features(db: Session = Depends(get_db)):
+    return utils.get_all_features(db)
+
 @router.get("/resource/{resource_name}/features")
 async def get_resource_features(resource_name: str, db: Session = Depends(get_db)):
     res = utils.get_user_features_from_resource_name(resource_name, db)

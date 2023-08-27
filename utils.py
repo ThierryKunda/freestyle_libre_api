@@ -95,10 +95,16 @@ def get_user_from_token(db: Session, token: str) -> db_models.User | None:
     if tk:
         # Do nothing if tokens is expired
         if tk.expiration_date < dt.now():
-            return None
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token already expired, please generate a new one."
+            )
         return db.query(db_models.User).filter_by(id=tk.user_id).first()
     else:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Access token does not exist"
+        )
 
 def get_user_data(username: str):
     return pd.read_csv(f"./users_data/{username}.csv", sep=',', header=1, parse_dates=[2], date_format="%d-%m-%Y %H:%M")
@@ -391,6 +397,9 @@ def get_all_resources(db: Session):
     )
         for r in db.query(db_models.DocResource).all()]
 
+def get_all_features(db: Session):
+    return db.query(db_models.DocFeature).all()
+
 def get_admin_features_from_resource_name(resource_name: str, db: Session, user: db_models.User):
     # Checks if user is an administrator with doc management role
     admin_record = db.query(db_models.AdminManagement).filter_by(
@@ -433,15 +442,19 @@ def check_admin_is_allowed(db: Session, user_id: int, role_required: resources.A
             detail=f"You are not an admin or you do not have the right to perform this action."
         )
     if is_admin is None:
+        print("Is not admin")
         raise unauth
     if role_required == resources.AdminRole.doc:
         if not is_admin.manage_doc:
+            print("Does not have doc role")
             raise unauth
     elif role_required == resources.AdminRole.user:
         if not is_admin.manage_user:
+            print("Does not have user role")
             raise unauth
     elif role_required == resources.AdminRole.backup:
         if not is_admin.manage_backup:
+            print("Does not have backup role")
             raise unauth
     else:
         raise unauth
