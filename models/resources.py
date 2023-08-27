@@ -18,6 +18,10 @@ class CreateUser(BaseModel):
     lastname: str
     password: str
 
+class UserDataStored(BaseModel):
+    user_data_exists: bool
+    last_update: datetime | None = None
+
 class UserDataFileUpdateResponse(BaseModel):
     message: str
 

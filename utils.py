@@ -106,6 +106,14 @@ def get_user_from_token(db: Session, token: str) -> db_models.User | None:
             detail="Access token does not exist"
         )
 
+def check_user_has_data(username: str):
+    path = Path(os.path.join("users_data", username+".csv"))
+    if not path.exists():
+        return resources.UserDataStored(user_data_exists=False)
+    file_info = path.stat()
+    last_update = dt.fromtimestamp(file_info.st_mtime)
+    return resources.UserDataStored(user_data_exists=True, last_update=last_update)
+
 def get_user_data(username: str):
     return pd.read_csv(f"./users_data/{username}.csv", sep=',', header=1, parse_dates=[2], date_format="%d-%m-%Y %H:%M")
 

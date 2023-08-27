@@ -4,6 +4,11 @@ from router_dependencies import *
 
 router = APIRouter(tags=["Raw data"])
 
+@router.get("/{username}/has_data")
+async def check_user_has_data(username: str, user: User = Security(get_authorized_user, scopes=['samples'])):
+    check_username(username, user)
+    return utils.check_user_has_data(username)
+
 @router.get("/{username}/raw_data")
 async def get_user_data_file(username: str, user: User = Security(get_authorized_user, scopes=['samples'])):
     check_username(username, user)
