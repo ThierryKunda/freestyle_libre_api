@@ -28,14 +28,14 @@ def get_user(db: Session, username: str, password: str):
         )
     return db.query(db_models.User).filter_by(firstname=firstname, lastname=lastname, password=pw).first()
 
-def add_new_user(db: Session, firstname: str, lastname: str, password: str):
+def add_new_user(db: Session, firstname: str, lastname: str, email: str, password: str):
     # Hashing the password for security concern (obviously)
     pw = encode_secret(password)
     # Check if user already exists
     res = db.query(db_models.User).filter_by(firstname=firstname, lastname=lastname).first()
     if res:
         return False
-    user = db_models.User(firstname=firstname, lastname=lastname, password=pw)
+    user = db_models.User(firstname=firstname, lastname=lastname, email=email, password=pw)
     db.add(user)
     db.commit()
     return user
@@ -85,11 +85,10 @@ def add_new_token(
     )
     db.add(tk)
     db.commit()
-    return {
-        "id": tk.id,
-        "value": tk.token_value,
-        "expiration_date": tk.expiration_date
-    }
+    return resources.Token(access_token=tk.token_value, token_type="Bearer")
+
+def get_user_role(db: Session):
+    check_admin_is_allowed
 
 def get_user_from_token(db: Session, token: str) -> db_models.User | None:
     # Checks if token already exists
@@ -452,19 +451,15 @@ def check_admin_is_allowed(db: Session, user_id: int, role_required: resources.A
             detail=f"You are not an admin or you do not have the right to perform this action."
         )
     if is_admin is None:
-        print("Is not admin")
         raise unauth
     if role_required == resources.AdminRole.doc:
         if not is_admin.manage_doc:
-            print("Does not have doc role")
             raise unauth
     elif role_required == resources.AdminRole.user:
         if not is_admin.manage_user:
-            print("Does not have user role")
             raise unauth
     elif role_required == resources.AdminRole.backup:
         if not is_admin.manage_backup:
-            print("Does not have backup role")
             raise unauth
     else:
         raise unauth

@@ -20,9 +20,9 @@ async def get_user_infos(user: User = Security(get_authorized_user, scopes=['pro
 
 @router.post("")
 async def new_user(user: resources.CreateUser, db: Session = Depends(get_db)):
-    new_user = utils.add_new_user(db, user.firstname, user.lastname, user.password)
+    new_user = utils.add_new_user(db, user.firstname, user.lastname, user.email, user.password)
     if new_user:
-        tk = utils.add_new_token(db, user.firstname, user.lastname, user.password, True, True, True, 1, "days")
+        tk = utils.add_new_token(db, user.firstname, user.lastname, user.password, True, True, True, True)
         return tk
     else:
         raise HTTPException(
