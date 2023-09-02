@@ -25,7 +25,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
                 "Retry-After": (60 * 60 * 24)
             }
         )
-    return resources.Token(access_token=tk["value"], token_type="bearer")
+    return tk
 
 @router.post("/submit_password_change")
 async def req_new_password(req_params: resources.ReqNewPasswordParameters, db: Session = Depends(get_db)):
