@@ -1,4 +1,4 @@
-from typing import Union, Callable
+from typing import Union, Callable, List
 from datetime import datetime, time, date
 from enum import Enum
 import statistics as stats
@@ -11,7 +11,7 @@ class User(BaseModel):
     lastname: str
     username: str
     email: str
-    devices_list: list[str]
+    devices_list: List[str]
 
 class CreateUser(BaseModel):
     firstname: str
@@ -50,7 +50,7 @@ class BloodGlucoseSample(BaseModel):
         return repr(self.value) + "   " + repr(self.sampling_date) + "   " + self.device_name
 
 class AverageDayParams(BaseModel):
-    hours: list[str]
+    hours: List[str]
     error: int
 
 class AverageDaySample(BaseModel):
