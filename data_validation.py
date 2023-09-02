@@ -56,7 +56,7 @@ async def validate_data_from_upload(file: UploadFile):
     try:
         user_data_schema.validate(df, lazy=True)
     except SchemaErrors as e:
-        column_names: list[str] = list(e.failure_cases['column'])
+        column_names: List[str] = list(e.failure_cases['column'])
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail={

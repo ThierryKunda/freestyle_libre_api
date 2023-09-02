@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter
 
 from router_dependencies import *
@@ -5,7 +7,7 @@ from router_dependencies import *
 router = APIRouter(tags=["Goals"])
 
 @router.get("/{username}/goals")
-def get_all_goals(username: str, db: Session = Depends(get_db), user: User = Security(get_authorized_user, scopes=['goals'])) -> list[resources.Goal]:
+def get_all_goals(username: str, db: Session = Depends(get_db), user: User = Security(get_authorized_user, scopes=['goals'])) -> List[resources.Goal]:
     check_username(username, user)
     return utils.get_user_goals(db, user)
 

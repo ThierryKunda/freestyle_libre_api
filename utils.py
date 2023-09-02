@@ -1,5 +1,5 @@
 import hashlib
-from typing import Literal
+from typing import Literal, Optional, Tuple, Dict, List
 from pathlib import Path
 import os
 from datetime import datetime as dt, time, timedelta as tdelta
@@ -50,7 +50,7 @@ def days_from_unit(value: int, unit: str) -> int:
     else:
         raise ValueError("Invalid time unit")
 
-def generate_token_value(db: Session, firstname: str, lastname: str) -> tuple[str, int] | None:
+def generate_token_value(db: Session, firstname: str, lastname: str) -> Optional[Tuple[str, int]]:
     last_signature = db.query(db_models.SecretSignature).order_by(
         desc(db_models.SecretSignature.generation_date)
         ).first()
@@ -90,7 +90,7 @@ def add_new_token(
 def get_user_role(db: Session):
     check_admin_is_allowed
 
-def get_user_from_token(db: Session, token: str) -> db_models.User | None:
+def get_user_from_token(db: Session, token: str) -> Optional[db_models.User]:
     # Checks if token already exists
     tk = db.query(db_models.Auth).filter_by(token_value=token).first()
     if tk:
@@ -118,7 +118,7 @@ def check_user_has_data(username: str):
 def get_user_data(username: str):
     return pd.read_csv(f"./users_data/{username}.csv", sep=',', header=1, parse_dates=[2], date_format="%d-%m-%Y %H:%M")
 
-def get_user_devices(user: db_models.User) -> list[str]:
+def get_user_devices(user: db_models.User) -> List[str]:
     if user:
         user_data = get_user_data(user.firstname + "_" + user.lastname)
         return list(set(user_data["Appareil"]))
@@ -140,7 +140,7 @@ def get_user_tokens(db: Session, user_id: str):
         for tk in user_tokens
     ]
 
-def get_token_rights(db: Session, token: str) -> dict[str, bool] | None:
+def get_token_rights(db: Session, token: str) -> Optional[Dict[str, bool]]:
     # Checks if token exists
     tk = db.query(db_models.Auth).filter_by(token_value=token).first()
     if tk:
@@ -231,10 +231,10 @@ def datetime_included_in_hour_interval(d: dt, t: time, e: int):
     ref_date = dt(year=d.year, month=d.month, day=d.day, hour=t.hour, minute=t.minute)
     return (d - tdelta(minutes=e)) <= ref_date <= (d + tdelta(minutes=e))
 
-def average_from_samples(samples: list[resources.BloodGlucoseSample]):
+def average_from_samples(samples: List[resources.BloodGlucoseSample]):
     return mean([s.value for s in samples])
 
-def get_user_average_day_user_samples(user: db_models.User, all_samples: dict[str, list[resources.BloodGlucoseSample]], hours: list[time], error: int):
+def get_user_average_day_user_samples(user: db_models.User, all_samples: Dict[str, List[resources.BloodGlucoseSample]], hours: List[time], error: int):
     user_samples = all_samples[user.firstname+'_'+user.lastname]
     # Aggregate samples included in specific time interval
     samples_grouped_by_time_interval = {
@@ -252,7 +252,7 @@ def get_user_average_day_user_samples(user: db_models.User, all_samples: dict[st
     ]
 
 def get_user_goals(db: Session, user: db_models.User):
-    goals: list[db_models.Goal] = db.query(db_models.Goal).filter_by(user_id=user.id).all()
+    goals: List[db_models.Goal] = db.query(db_models.Goal).filter_by(user_id=user.id).all()
     return [
         resources.Goal(
             id=g.id,
@@ -282,21 +282,21 @@ def add_new_goal(
             db: Session, user: db_models.User,
             title: str,
             status: int,
-            start_datetime: dt | None = None,
-            end_datetime: dt | None = None,
-            average_target: int | None = None,
-            trend_target: int | None = None,
-            minimum: int | None = None,
-            maximum: int | None = None,
-            stat_range: int | None = None,
-            mean: float | None = None,
-            variance: float | None = None,
-            std_dev: float | None = None,
-            overall_samples_size: int | None = None,
-            first_quart: int | None = None,
-            second_quart: int | None = None,
-            third_quart: int | None = None,
-            median: float | None = None
+            start_datetime: Optional[dt] = None,
+            end_datetime: Optional[dt] = None,
+            average_target: Optional[int] = None,
+            trend_target: Optional[int] = None,
+            minimum: Optional[int] = None,
+            maximum: Optional[int] = None,
+            stat_range: Optional[int] = None,
+            mean: Optional[float] = None,
+            variance: Optional[float] = None,
+            std_dev: Optional[float] = None,
+            overall_samples_size: Optional[int] = None,
+            first_quart: Optional[int] = None,
+            second_quart: Optional[int] = None,
+            third_quart: Optional[int] = None,
+            median: Optional[float] = None
         ):
     existing_goal = db.query(db_models.Goal).filter_by(title=title).first()
     if existing_goal:
@@ -325,7 +325,7 @@ def add_new_goal(
     db.commit()
     return g
 
-def remove_goal(db: Session, goal_id: int) -> resources.Goal | None:
+def remove_goal(db: Session, goal_id: int) -> Optional[resources.Goal]:
     existing_goal = db.query(db_models.Goal).filter_by(id=goal_id).first()
     if not existing_goal:
         return None
@@ -343,7 +343,7 @@ def remove_goal(db: Session, goal_id: int) -> resources.Goal | None:
     )
     return g
 
-def remove_all_goals(db: Session, user: db_models.User) -> list[resources.Goal]:
+def remove_all_goals(db: Session, user: db_models.User) -> List[resources.Goal]:
     all_goals = db.query(db_models.Goal).filter_by(user_id=user.id).all()
     for g in all_goals:
         db.delete(g)
@@ -360,7 +360,7 @@ def remove_all_goals(db: Session, user: db_models.User) -> list[resources.Goal]:
     ) for g in all_goals]
 
 
-def update_goal_attribute(db: Session, goal_id: int, updatedKey: resources.UpdatedKey, new_value: resources.GoalAttr) ->resources.Goal | None:
+def update_goal_attribute(db: Session, goal_id: int, updatedKey: resources.UpdatedKey, new_value: resources.GoalAttr) ->Optional[resources.Goal]:
     existing_goal = db.query(db_models.Goal).filter_by(id=goal_id).first()
     if not existing_goal:
         return None

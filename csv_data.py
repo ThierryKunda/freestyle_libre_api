@@ -2,6 +2,7 @@ import os
 
 from enum import Enum
 from datetime import datetime
+from typing import List, Optional
 import pandas as pd
 from pandera.errors import SchemaError
 
@@ -11,8 +12,8 @@ class SourceType(Enum):
     CSVfile = 'CSVfile'
     sourceUri = 'sourceUri'
 
-def samples_from_csv(data_from: str = SourceType.CSVfile, **query_parameters) -> list[BloodGlucoseSample] | None:
-    res: list[BloodGlucoseSample] = []
+def samples_from_csv(data_from: str = SourceType.CSVfile, **query_parameters) -> Optional[List[BloodGlucoseSample]]:
+    res: List[BloodGlucoseSample] = []
     if data_from == SourceType.CSVfile:
         df = pd.read_csv(query_parameters["filepath"], sep=',', header=1, parse_dates=[2], date_format="%d-%m-%Y %H:%M", low_memory=False, converters={
         "Insuline à action longue (unités)": convert_insulin,

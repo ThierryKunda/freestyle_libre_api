@@ -1,9 +1,11 @@
+from typing import List
+
 from router_dependencies import *
 
 router = APIRouter(tags=["Samples"])
 
 @router.get("/{username}/samples")
-async def read_samples(username: str, day: Optional[str] = None, user: User = Security(get_authorized_user, scopes=['samples'])) -> list[resources.BloodGlucoseSample]:
+async def read_samples(username: str, day: Optional[str] = None, user: User = Security(get_authorized_user, scopes=['samples'])) -> List[resources.BloodGlucoseSample]:
     check_username(username, user)
     lazy_load_user_data(username)
     if day is None:

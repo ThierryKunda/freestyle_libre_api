@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import List, Dict
 from datetime import datetime
 
 from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Depends, Security, status, APIRouter
@@ -36,11 +36,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", scopes={
 })
 
 def map_access_form_inputs(
-        inputs: list[str] = ["not_allowed", "not_allowed", "not_allowed"],
-        mappings: dict[str, bool] = {"allowed": True, "not_allowed": False},
+        inputs: List[str] = ["not_allowed", "not_allowed", "not_allowed"],
+        mappings: Dict[str, bool] = {"allowed": True, "not_allowed": False},
         in_place: bool = False,
         input_prefixed: bool = False,
-    ) -> list[bool]:
+    ) -> List[bool]:
     # Default prefixes : profile samples goals stats
     if input_prefixed:
         res = [False, False, False, False]
@@ -97,7 +97,7 @@ async def get_authorized_user(security_scopes: SecurityScopes, db: Session = Dep
         )
     return user
 
-samples_collection: dict[str, list[resources.BloodGlucoseSample]] = {}
+samples_collection: Dict[str, List[resources.BloodGlucoseSample]] = {}
 stats_collection = {key: resources.Stats.from_sample_collection(samples_collection[key]) for key in samples_collection}
 
 def check_username(username: str, user: User) -> None:
