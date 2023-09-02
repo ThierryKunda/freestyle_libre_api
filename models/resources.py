@@ -1,4 +1,4 @@
-from typing import Union, Callable, List
+from typing import Union, Callable, List, Optional, Tuple, Dict
 from datetime import datetime, time, date
 from enum import Enum
 import statistics as stats
@@ -21,7 +21,7 @@ class CreateUser(BaseModel):
 
 class UserDataStored(BaseModel):
     user_data_exists: bool
-    last_update: datetime | None = None
+    last_update: Optional[datetime]
 
 class UserDataFileUpdateResponse(BaseModel):
     message: str
@@ -31,7 +31,7 @@ class Token(BaseModel):
     token_type: str
 
 class TokenDisplay(BaseModel):
-    app_name: str | None
+    app_name: Optional[str]
     token_value: str
     creation_date: str
     expiration_date: str
@@ -92,10 +92,10 @@ class Trend(BaseModel):
     delta: float
 
 class HourTrend(Trend):
-    hours_intervals: tuple[datetime, datetime]
+    hours_intervals: Tuple[datetime, datetime]
 
     @classmethod
-    def from_hours(cls, h1: datetime, h2: datetime, samples_collection: list[BloodGlucoseSample], error: int):
+    def from_hours(cls, h1: datetime, h2: datetime, samples_collection: List[BloodGlucoseSample], error: int):
         filtered_elements = list(filter(lambda e: h1 <= e.sampling_date <= h2, samples_collection))
         first_el, last_el = filtered_elements[0], filtered_elements[len(filtered_elements)-1]
         state = TrendState.steady
@@ -107,10 +107,10 @@ class HourTrend(Trend):
         return cls(state=state, delta=delta, hours_intervals=(h1,h2))
     
 class DayTrend(Trend):
-    days_intervals: tuple[date, date]
+    days_intervals: Tuple[date, date]
 
     @classmethod
-    def from_days(cls, day1: date, day2: date, samples_collection: list[BloodGlucoseSample], error: int):
+    def from_days(cls, day1: date, day2: date, samples_collection: List[BloodGlucoseSample], error: int):
         filtered_elements = list(filter(lambda e: day1 <= e.sampling_date.date() <= day2, samples_collection))
         first_el, last_el = filtered_elements[0], filtered_elements[len(filtered_elements)-1]
         state = TrendState.steady
@@ -122,12 +122,12 @@ class DayTrend(Trend):
         return cls(state=state, delta=delta, days_intervals=(day1,day2))
 
 class MonthTrend(Trend):
-    month_start: tuple[int, int]
-    month_end: tuple[int, int]
+    month_start: Tuple[int, int]
+    month_end: Tuple[int, int]
     are_same_year: bool
 
     @classmethod
-    def from_months(cls, mth1: int, yr1: int, mth2: int, yr2: int, samples_collection: list[BloodGlucoseSample], error: int):
+    def from_months(cls, mth1: int, yr1: int, mth2: int, yr2: int, samples_collection: List[BloodGlucoseSample], error: int):
         # Comparing month and year values
         interval_fun: Callable[[BloodGlucoseSample], bool] = lambda e: mth1 <= e.sampling_date.month <= mth2 and yr1 <= e.sampling_date.year <= yr2
         filtered_elements = list(filter(interval_fun, samples_collection))
@@ -141,21 +141,21 @@ class MonthTrend(Trend):
         return cls(state=state, delta=delta, month_start=(mth1, yr1), month_end=(mth2, yr2), are_same_year=yr1==yr2)
 
 class Stats(BaseModel):
-    time_range:tuple[str, str] | tuple[datetime, datetime] | None
-    minimum: int | None
-    maximum: int | None
-    stat_range: int | None
-    mean: float | None
-    variance: float | None
-    standard_deviation: float | None
-    overall_samples_size: int | None
-    first_quartile: int | None
-    second_quartile: int | None
-    third_quartile: int | None
-    median: Union[float, int] | None
+    time_range: Optional[Union[Tuple[str, str], Tuple[datetime, datetime]]]
+    minimum: Optional[int]
+    maximum: Optional[int]
+    stat_range: Optional[int]
+    mean:Optional[float]
+    variance: Optional[float]
+    standard_deviation: Optional[float]
+    overall_samples_size: Optional[int]
+    first_quartile: Optional[int]
+    second_quartile: Optional[int]
+    third_quartile: Optional[int]
+    median: Optional[Union[float, int]]
 
     @classmethod
-    def from_sample_collection(cls, sample_collection: list[BloodGlucoseSample]):
+    def from_sample_collection(cls, sample_collection: List[BloodGlucoseSample]):
         values = [s.value for s in sample_collection]
         qts: list = stats.quantiles(values, n=4)
         return cls(
@@ -174,7 +174,7 @@ class Stats(BaseModel):
         )
     
     @classmethod
-    def from_all_users_samples(cls, all_users_samples: dict[str, list[BloodGlucoseSample]]):
+    def from_all_users_samples(cls, all_users_samples: Dict[str, List[BloodGlucoseSample]]):
         # Flatten the users collections
         flatten_collection = [sample for user_collection in all_users_samples.values() for sample in user_collection]
         return cls.from_sample_collection(flatten_collection) 
@@ -209,29 +209,29 @@ class GoalStatus(Enum):
             return 1
 
 class Goal(BaseModel):
-    id: int | None
-    title: str | None
-    status: GoalStatus | None
-    start_datetime: datetime | None
-    end_datetime: datetime | None
-    average_target: int | None
-    trend_target: TrendState | None
-    stats_target: Stats | None
+    id: Optional[int]
+    title: Optional[str]
+    status: Optional[GoalStatus]
+    start_datetime: Optional[datetime]
+    end_datetime: Optional[datetime]
+    average_target: Optional[int]
+    trend_target: Optional[TrendState]
+    stats_target: Optional[Stats]
 
 class GoalAttr(BaseModel):
-    value: int | str | datetime
+    value: Union[int, str, datetime]
 
 class AllUserInformation(BaseModel):
     account: User
-    goals: list[Goal]
+    goals: List[Goal]
 
 class Resource(BaseModel):
     resource_name: str
-    description: str | None
+    description: Optional[str]
 
 class Feature(BaseModel):
     title: str
-    description: str | None
+    description: Optional[str]
     http_verb: str
     uri: str
     available: bool
@@ -241,9 +241,9 @@ class BlockOfContent(BaseModel):
     content: str
 
 class APIDocInfo(BaseModel):
-    description: list[BlockOfContent]
-    authentification: list[BlockOfContent]
-    rights: list[BlockOfContent]
+    description: List[BlockOfContent]
+    authentification: List[BlockOfContent]
+    rights: List[BlockOfContent]
 
 class ReqNewPasswordParameters(BaseModel):
     email_or_username: str
@@ -258,7 +258,7 @@ class PasswordResponse(BaseModel):
 class Resources(BaseModel):
     id: int
     resource_name: str
-    description: str | None
+    description: Optional[str]
 
 class AdminRole(Enum):
     doc = 'doc'
@@ -272,4 +272,4 @@ class SecretSignature(BaseModel):
 
 class UserRole(BaseModel):
     is_admin: bool = False
-    admin_roles: list[AdminRole] | None = None
+    admin_roles: Optional[List[AdminRole]] = None
