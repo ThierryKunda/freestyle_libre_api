@@ -1,3 +1,12 @@
 [mounts]
 source = "flapi_db"
 destination = "/mnt/flapi_db"
+
+[build]
+image = "flyio/hellofly:latest"
+
+[deploy]
+release_command = "python3 main.py"
+
+[env]
+ENVIRONNEMENT = "DEV"
