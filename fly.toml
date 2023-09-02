@@ -1,0 +1,3 @@
+[mounts]
+source = "flapi_db"
+destination = "/mnt/flapi_db"
